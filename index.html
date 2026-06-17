@@ -50,7 +50,6 @@ margin:5px;
 width:220px;
 }
 
-/* BOTONES GENERALES */
 button{
 padding:10px 14px;
 border:none;
@@ -62,25 +61,16 @@ transition: all 0.2s ease;
 box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-button:active{
-transform: scale(0.97);
-}
+button:active{transform:scale(0.97);}
 
-/* PRINCIPALES */
-.btn-agregar{
-background:linear-gradient(135deg,#007bff,#0056d2);
-color:white;
-}
-.btn-exportar{
-background:linear-gradient(135deg,#28a745,#1e7e34);
-color:white;
-}
+.btn-agregar{background:linear-gradient(135deg,#007bff,#0056d2);color:white;}
+.btn-check{background:linear-gradient(135deg,#28a745,#1e7e34);color:white;padding:6px 10px;font-size:12px;}
+.btn-trash{background:linear-gradient(135deg,#dc3545,#a71d2a);color:white;padding:6px 10px;font-size:12px;}
+.btn-edit{background:linear-gradient(135deg,#ffc107,#e0a800);color:white;padding:6px 10px;font-size:12px;}
 
-/* ESTADOS */
 .estado-pendiente{color:#dc3545;font-weight:bold;}
 .estado-entregado{color:#28a745;font-weight:bold;}
 
-/* TABLA */
 table{
 width:100%;
 border-collapse:collapse;
@@ -99,7 +89,6 @@ border-bottom:1px solid #ddd;
 font-size:14px;
 }
 
-/* FILTROS */
 .filtros{
 margin-bottom:20px;
 }
@@ -109,36 +98,6 @@ margin-bottom:20px;
 padding:8px;
 margin-right:10px;
 }
-
-/* =========================
-   BOTONES MINI (CHECK & DELETE)
-========================= */
-
-.btn-check{
-background:linear-gradient(135deg,#28a745,#1e7e34);
-color:white;
-padding:6px 10px;
-border-radius:8px;
-font-size:12px;
-}
-
-.btn-check:hover{
-transform: translateY(-2px);
-box-shadow:0 6px 14px rgba(40,167,69,0.35);
-}
-
-.btn-trash{
-background:linear-gradient(135deg,#dc3545,#a71d2a);
-color:white;
-padding:6px 10px;
-border-radius:8px;
-font-size:12px;
-}
-
-.btn-trash:hover{
-transform: translateY(-2px);
-box-shadow:0 6px 14px rgba(220,53,69,0.35);
-}
 </style>
 </head>
 
@@ -147,30 +106,27 @@ box-shadow:0 6px 14px rgba(220,53,69,0.35);
 <h1>📦 Sistema de Gestión de Pedidos</h1>
 
 <div class="card-container">
-<div class="card">
-<h3 id="pendientes">0</h3>
-<p>Pendientes</p>
-</div>
-
-<div class="card">
-<h3 id="entregados">0</h3>
-<p>Entregados</p>
-</div>
-
-<div class="card">
-<h3 id="total">0</h3>
-<p>Total</p>
-</div>
+<div class="card"><h3 id="pendientes">0</h3><p>Pendientes</p></div>
+<div class="card"><h3 id="entregados">0</h3><p>Entregados</p></div>
+<div class="card"><h3 id="total">0</h3><p>Total</p></div>
 </div>
 
 <div class="formulario">
-<h2>Nuevo Pedido</h2>
+<h2>Nuevo / Editar Pedido</h2>
 
 <input type="text" id="cliente" placeholder="Cliente">
 <input type="text" id="telefono" placeholder="Teléfono">
 <input type="text" id="direccion" placeholder="Dirección">
 <input type="text" id="distrito" placeholder="Distrito">
 <input type="text" id="vendedor" placeholder="Vendedor">
+
+<select id="medioPago">
+<option>Efectivo</option>
+<option>Yape</option>
+<option>Plin</option>
+<option>Transferencia</option>
+<option>Tarjeta</option>
+</select>
 
 <select id="camion">
 <option>Camión 1</option>
@@ -180,9 +136,7 @@ box-shadow:0 6px 14px rgba(220,53,69,0.35);
 
 <input type="text" id="observaciones" placeholder="Observaciones">
 
-<button class="btn-agregar" onclick="agregarPedido()">
-Agregar Pedido
-</button>
+<button class="btn-agregar" onclick="guardarPedido()">Guardar Pedido</button>
 </div>
 
 <div class="filtros">
@@ -204,11 +158,12 @@ Agregar Pedido
 <th>Teléfono</th>
 <th>Dirección</th>
 <th>Distrito</th>
+<th>Vendedor</th>
+<th>Pago</th>
 <th>Camión</th>
 <th>Fecha</th>
 <th>Estado</th>
 <th>Observaciones</th>
-<th>Vendedor</th>
 <th>Acción</th>
 </tr>
 </thead>
@@ -218,122 +173,103 @@ Agregar Pedido
 
 <script>
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKJXQh4zXXHWA6Y9LkHQK3t1-_G3yB7RahlXLN7Z4MzNg77EH9eL-81jKQTDC5R-s/exec";
+const GOOGLE_SCRIPT_URL = "TU_URL_AQUI";
 
-let pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
-let pedidosFiltrados = [...pedidos];
+let pedidos = [];
+let pedidosFiltrados = [];
+let editandoId = null;
 
-function guardarLocal(){
-localStorage.setItem("pedidos", JSON.stringify(pedidos));
-}
-
-/* =========================
-   GOOGLE SHEETS
-========================= */
+window.onload = () => cargarDesdeSheets();
 
 async function sendToSheets(payload){
-try{
 await fetch(GOOGLE_SCRIPT_URL,{
 method:"POST",
-body: JSON.stringify(payload)
+body:JSON.stringify(payload)
 });
-}catch(e){}
 }
 
-/* =========================
-   AGREGAR
-========================= */
-
-async function agregarPedido(){
-
-const cliente = document.getElementById("cliente").value;
-if(cliente.trim()==="") return alert("Ingrese cliente");
-
-const nuevo = {
-id: Date.now(),
-cliente,
-telefono: document.getElementById("telefono").value,
-direccion: document.getElementById("direccion").value,
-distrito: document.getElementById("distrito").value,
-camion: document.getElementById("camion").value,
-observaciones: document.getElementById("observaciones").value,
-vendedor: document.getElementById("vendedor").value,
-fecha: new Date().toISOString(),
-estado: "Pendiente"
-};
-
-pedidos.push(nuevo);
-guardarLocal();
-
-await sendToSheets({action:"add", ...nuevo});
-
-renderTabla();
-}
-
-/* =========================
-   ELIMINAR
-========================= */
-
-async function eliminarPedido(id){
-
-const p = pedidos.find(x=>x.id===id);
-if(!p) return;
-
-if(!confirm(`¿Eliminar pedido de ${p.cliente}?`)) return;
-
-pedidos = pedidos.filter(x=>x.id!==id);
-guardarLocal();
-
-await sendToSheets({action:"delete", id});
-
-renderTabla();
-}
-
-/* =========================
-   ESTADO
-========================= */
-
-async function cambiarEstado(id){
-
-const p = pedidos.find(x=>x.id===id);
-if(!p) return;
-
-p.estado = p.estado==="Entregado" ? "Pendiente" : "Entregado";
-
-guardarLocal();
-
-await sendToSheets({
-action:"updateStatus",
-id,
-estado:p.estado
-});
-
-renderTabla();
-}
 async function cargarDesdeSheets(){
 const res = await fetch(GOOGLE_SCRIPT_URL);
 const data = await res.json();
 
 pedidos = data || [];
-
-/* 🔥 IMPORTANTE: respeta filtros activos */
 aplicarFiltros();
-
 actualizarDashboard();
 cargarDistritos();
 }
 
-/* =========================
-   FILTROS
-========================= */
+/* GUARDAR / EDITAR */
+async function guardarPedido(){
 
+const data = {
+id: editandoId || Date.now(),
+cliente: cliente.value,
+telefono: telefono.value,
+direccion: direccion.value,
+distrito: distrito.value,
+vendedor: vendedor.value,
+medioPago: medioPago.value,
+camion: camion.value,
+observaciones: observaciones.value,
+fecha: new Date().toISOString(),
+estado: "Pendiente"
+};
+
+if(editandoId){
+await sendToSheets({action:"update",...data});
+editandoId = null;
+}else{
+await sendToSheets({action:"add",...data});
+}
+
+await cargarDesdeSheets();
+limpiarFormulario();
+}
+
+/* EDITAR */
+function editarPedido(id){
+
+const p = pedidos.find(x=>x.id===id);
+if(!p) return;
+
+editandoId = id;
+
+cliente.value = p.cliente;
+telefono.value = p.telefono;
+direccion.value = p.direccion;
+distrito.value = p.distrito;
+vendedor.value = p.vendedor;
+medioPago.value = p.medioPago;
+camion.value = p.camion;
+observaciones.value = p.observaciones;
+}
+
+/* ELIMINAR */
+async function eliminarPedido(id){
+if(!confirm("¿Eliminar pedido?")) return;
+
+await sendToSheets({action:"delete",id});
+await cargarDesdeSheets();
+}
+
+/* ESTADO */
+async function cambiarEstado(id){
+
+const p = pedidos.find(x=>x.id===id);
+p.estado = p.estado==="Entregado"?"Pendiente":"Entregado";
+
+await sendToSheets({action:"updateStatus",id:p.id,estado:p.estado});
+await cargarDesdeSheets();
+}
+
+/* FILTROS */
 function aplicarFiltros(){
 
-const d = document.getElementById("filtroDistrito").value;
-const f = document.getElementById("filtroFecha").value;
+const d = filtroDistrito.value;
+const f = filtroFecha.value;
 
 pedidosFiltrados = pedidos.filter(p=>{
-return (!d || p.distrito === d) &&
+return (!d || p.distrito===d) &&
 (!f || p.fecha.startsWith(f));
 });
 
@@ -341,40 +277,45 @@ renderTabla();
 }
 
 function limpiarFiltros(){
-document.getElementById("filtroDistrito").value = "";
-document.getElementById("filtroFecha").value = "";
-
+filtroDistrito.value="";
+filtroFecha.value="";
 aplicarFiltros();
 }
-/* =========================
-   UI
-========================= */
 
+/* UI */
 function actualizarDashboard(){
 
-document.getElementById("pendientes").innerText =
-pedidos.filter(p=>p.estado==="Pendiente").length;
+pendientes.innerText = pedidos.filter(p=>p.estado==="Pendiente").length;
+entregados.innerText = pedidos.filter(p=>p.estado==="Entregado").length;
+total.innerText = pedidos.length;
+}
 
-document.getElementById("entregados").innerText =
-pedidos.filter(p=>p.estado==="Entregado").length;
+function cargarDistritos(){
+filtroDistrito.innerHTML = `<option value="">Todos</option>`;
 
-document.getElementById("total").innerText = pedidos.length;
+[...new Set(pedidos.map(p=>p.distrito))].forEach(d=>{
+const opt=document.createElement("option");
+opt.value=d;
+opt.textContent=d;
+filtroDistrito.appendChild(opt);
+});
 }
 
 function renderTabla(){
 
-const t = document.getElementById("tablaPedidos");
-t.innerHTML="";
+tablaPedidos.innerHTML="";
 
 pedidosFiltrados.forEach(p=>{
 
-t.innerHTML += `
+tablaPedidos.innerHTML += `
 <tr>
 <td>${p.id}</td>
 <td>${p.cliente}</td>
 <td>${p.telefono}</td>
 <td>${p.direccion}</td>
 <td>${p.distrito}</td>
+<td>${p.vendedor}</td>
+<td>${p.medioPago}</td>
 <td>${p.camion}</td>
 <td>${new Date(p.fecha).toLocaleString()}</td>
 
@@ -383,41 +324,16 @@ ${p.estado}
 </td>
 
 <td>${p.observaciones}</td>
-<td>${p.vendedor || ""}</td>
 
 <td>
 <button class="btn-check" onclick="cambiarEstado(${p.id})">✓</button>
+<button class="btn-edit" onclick="editarPedido(${p.id})">✏️</button>
 <button class="btn-trash" onclick="eliminarPedido(${p.id})">🗑</button>
 </td>
 </tr>
 `;
 });
-
-actualizarDashboard();
 }
-
-function cargarDistritos(){
-
-const sel = document.getElementById("filtroDistrito");
-sel.innerHTML = `<option value="">Todos</option>`;
-
-const ds = [...new Set(pedidos.map(p=>p.distrito))];
-
-ds.forEach(d=>{
-const opt = document.createElement("option");
-opt.value = d;
-opt.textContent = d;
-sel.appendChild(opt);
-});
-}
-
-cargarDistritos();
-renderTabla();
-
-
-setInterval(() => {
-  cargarDesdeSheets();
-}, 3000);
 
 </script>
 
