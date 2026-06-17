@@ -64,9 +64,9 @@ box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 button:active{transform:scale(0.97);}
 
 .btn-agregar{background:linear-gradient(135deg,#007bff,#0056d2);color:white;}
-.btn-check{background:linear-gradient(135deg,#28a745,#1e7e34);color:white;padding:6px 10px;font-size:12px;}
-.btn-trash{background:linear-gradient(135deg,#dc3545,#a71d2a);color:white;padding:6px 10px;font-size:12px;}
-.btn-edit{background:linear-gradient(135deg,#ffc107,#e0a800);color:white;padding:6px 10px;font-size:12px;}
+.btn-check{background:linear-gradient(135deg,#28a745,#1e7e34);color:white;}
+.btn-trash{background:linear-gradient(135deg,#dc3545,#a71d2a);color:white;}
+.btn-edit{background:linear-gradient(135deg,#ffc107,#e0a800);color:white;}
 
 .estado-pendiente{color:#dc3545;font-weight:bold;}
 .estado-entregado{color:#28a745;font-weight:bold;}
@@ -103,7 +103,7 @@ margin-right:10px;
 
 <body>
 
-<h1>📦 Sistema de Gestión de Pedidos</h1>
+<h1>📦 Sistema de Pedidos</h1>
 
 <div class="card-container">
 <div class="card"><h3 id="pendientes">0</h3><p>Pendientes</p></div>
@@ -112,7 +112,6 @@ margin-right:10px;
 </div>
 
 <div class="formulario">
-<h2>Nuevo / Editar Pedido</h2>
 
 <input type="text" id="cliente" placeholder="Cliente">
 <input type="text" id="telefono" placeholder="Teléfono">
@@ -125,7 +124,6 @@ margin-right:10px;
 <option>Yape</option>
 <option>Plin</option>
 <option>Transferencia</option>
-<option>Tarjeta</option>
 </select>
 
 <select id="camion">
@@ -137,6 +135,7 @@ margin-right:10px;
 <input type="text" id="observaciones" placeholder="Observaciones">
 
 <button class="btn-agregar" onclick="guardarPedido()">Guardar Pedido</button>
+
 </div>
 
 <div class="filtros">
@@ -173,32 +172,27 @@ margin-right:10px;
 
 <script>
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKJXQh4zXXHWA6Y9LkHQK3t1-_G3yB7RahlXLN7Z4MzNg77EH9eL-81jKQTDC5R-s/exec";
+const URL = "TU_URL_AQUI";
 
 let pedidos = [];
 let pedidosFiltrados = [];
 let editandoId = null;
 
-window.onload = () => cargarDesdeSheets();
+window.onload = cargar;
 
-async function sendToSheets(payload){
-await fetch(GOOGLE_SCRIPT_URL,{
+async function cargar(){
+const res = await fetch(URL);
+pedidos = await res.json();
+aplicarFiltros();
+}
+
+async function send(data){
+await fetch(URL,{
 method:"POST",
-body:JSON.stringify(payload)
+body:JSON.stringify(data)
 });
 }
 
-async function cargarDesdeSheets(){
-const res = await fetch(GOOGLE_SCRIPT_URL);
-const data = await res.json();
-
-pedidos = data || [];
-aplicarFiltros();
-actualizarDashboard();
-cargarDistritos();
-}
-
-/* GUARDAR / EDITAR */
 async function guardarPedido(){
 
 const data = {
@@ -212,68 +206,58 @@ medioPago: medioPago.value,
 camion: camion.value,
 observaciones: observaciones.value,
 fecha: new Date().toISOString(),
-estado: "Pendiente"
+estado:"Pendiente"
 };
 
 if(editandoId){
-await sendToSheets({action:"update",...data});
-editandoId = null;
+await send({action:"update",...data});
+editandoId=null;
 }else{
-await sendToSheets({action:"add",...data});
+await send({action:"add",...data});
 }
 
-await cargarDesdeSheets();
-limpiarFormulario();
+await cargar();
+limpiar();
 }
 
-/* EDITAR */
 function editarPedido(id){
+const p = pedidos.find(x=>x.id==id);
+editandoId=id;
 
-const p = pedidos.find(x=>x.id===id);
-if(!p) return;
-
-editandoId = id;
-
-cliente.value = p.cliente;
-telefono.value = p.telefono;
-direccion.value = p.direccion;
-distrito.value = p.distrito;
-vendedor.value = p.vendedor;
-medioPago.value = p.medioPago;
-camion.value = p.camion;
-observaciones.value = p.observaciones;
+cliente.value=p.cliente;
+telefono.value=p.telefono;
+direccion.value=p.direccion;
+distrito.value=p.distrito;
+vendedor.value=p.vendedor;
+medioPago.value=p.medioPago;
+camion.value=p.camion;
+observaciones.value=p.observaciones;
 }
 
-/* ELIMINAR */
 async function eliminarPedido(id){
-if(!confirm("¿Eliminar pedido?")) return;
-
-await sendToSheets({action:"delete",id});
-await cargarDesdeSheets();
+if(!confirm("Eliminar?")) return;
+await send({action:"delete",id});
+await cargar();
 }
 
-/* ESTADO */
 async function cambiarEstado(id){
-
-const p = pedidos.find(x=>x.id===id);
+const p = pedidos.find(x=>x.id==id);
 p.estado = p.estado==="Entregado"?"Pendiente":"Entregado";
-
-await sendToSheets({action:"updateStatus",id:p.id,estado:p.estado});
-await cargarDesdeSheets();
+await send({action:"updateStatus",id:p.id,estado:p.estado});
+await cargar();
 }
 
-/* FILTROS */
 function aplicarFiltros(){
 
 const d = filtroDistrito.value;
 const f = filtroFecha.value;
 
 pedidosFiltrados = pedidos.filter(p=>{
-return (!d || p.distrito===d) &&
+return (!d || p.distrito==d) &&
 (!f || p.fecha.startsWith(f));
 });
 
-renderTabla();
+render();
 }
 
 function limpiarFiltros(){
@@ -282,32 +266,13 @@ filtroFecha.value="";
 aplicarFiltros();
 }
 
-/* UI */
-function actualizarDashboard(){
-
-pendientes.innerText = pedidos.filter(p=>p.estado==="Pendiente").length;
-entregados.innerText = pedidos.filter(p=>p.estado==="Entregado").length;
-total.innerText = pedidos.length;
-}
-
-function cargarDistritos(){
-filtroDistrito.innerHTML = `<option value="">Todos</option>`;
-
-[...new Set(pedidos.map(p=>p.distrito))].forEach(d=>{
-const opt=document.createElement("option");
-opt.value=d;
-opt.textContent=d;
-filtroDistrito.appendChild(opt);
-});
-}
-
-function renderTabla(){
+function render(){
 
 tablaPedidos.innerHTML="";
 
 pedidosFiltrados.forEach(p=>{
 
-tablaPedidos.innerHTML += `
+tablaPedidos.innerHTML+=`
 <tr>
 <td>${p.id}</td>
 <td>${p.cliente}</td>
@@ -319,7 +284,7 @@ tablaPedidos.innerHTML += `
 <td>${p.camion}</td>
 <td>${new Date(p.fecha).toLocaleString()}</td>
 
-<td class="${p.estado==="Entregado"?'estado-entregado':'estado-pendiente'}">
+<td class="${p.estado==='Entregado'?'estado-entregado':'estado-pendiente'}">
 ${p.estado}
 </td>
 
@@ -333,6 +298,15 @@ ${p.estado}
 </tr>
 `;
 });
+}
+
+function limpiar(){
+cliente.value="";
+telefono.value="";
+direccion.value="";
+distrito.value="";
+vendedor.value="";
+observaciones.value="";
 }
 
 </script>
