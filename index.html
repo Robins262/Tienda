@@ -64,9 +64,9 @@ box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 button:active{transform:scale(0.97);}
 
 .btn-agregar{background:linear-gradient(135deg,#007bff,#0056d2);color:white;}
-.btn-check{background:linear-gradient(135deg,#28a745,#1e7e34);color:white;}
-.btn-trash{background:linear-gradient(135deg,#dc3545,#a71d2a);color:white;}
-.btn-edit{background:linear-gradient(135deg,#ffc107,#e0a800);color:white;}
+.btn-check{background:linear-gradient(135deg,#28a745,#1e7e34);color:white;padding:6px 10px;font-size:12px;}
+.btn-trash{background:linear-gradient(135deg,#dc3545,#a71d2a);color:white;padding:6px 10px;font-size:12px;}
+.btn-edit{background:linear-gradient(135deg,#ffc107,#e0a800);color:white;padding:6px 10px;font-size:12px;}
 
 .estado-pendiente{color:#dc3545;font-weight:bold;}
 .estado-entregado{color:#28a745;font-weight:bold;}
@@ -103,7 +103,7 @@ margin-right:10px;
 
 <body>
 
-<h1>📦 Sistema de Pedidos</h1>
+<h1>📦 Sistema de Gestión de Pedidos</h1>
 
 <div class="card-container">
 <div class="card"><h3 id="pendientes">0</h3><p>Pendientes</p></div>
@@ -112,6 +112,7 @@ margin-right:10px;
 </div>
 
 <div class="formulario">
+<h2>Nuevo / Editar Pedido</h2>
 
 <input type="text" id="cliente" placeholder="Cliente">
 <input type="text" id="telefono" placeholder="Teléfono">
@@ -124,6 +125,7 @@ margin-right:10px;
 <option>Yape</option>
 <option>Plin</option>
 <option>Transferencia</option>
+<option>Tarjeta</option>
 </select>
 
 <select id="camion">
@@ -135,7 +137,6 @@ margin-right:10px;
 <input type="text" id="observaciones" placeholder="Observaciones">
 
 <button class="btn-agregar" onclick="guardarPedido()">Guardar Pedido</button>
-
 </div>
 
 <div class="filtros">
@@ -172,141 +173,261 @@ margin-right:10px;
 
 <script>
 
-const URL = "https://script.google.com/macros/s/AKfycbw0W1qdItKAnh6tegZv8_YixmK7bFwSYTHteRKrhJz6byKKJRbdbr1ffUZJdtQZYLnY/exec";
+// ============================================
+// CAMBIA ESTA URL POR LA TUYA DE APPS SCRIPT
+// ============================================
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7Y0GcErEntZoiw0cQi5VdiCe4OhK3KOU5TCSkMWgedGgClhKrjIscS-uytVozXQbk/exec";
 
 let pedidos = [];
 let pedidosFiltrados = [];
 let editandoId = null;
 
-window.onload = cargar;
+window.onload = () => cargarDesdeSheets();
 
-async function cargar(){
-const res = await fetch(URL);
-pedidos = await res.json();
-aplicarFiltros();
+/* =========================
+   FETCH SEGURO
+========================= */
+async function sendToSheets(payload) {
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const text = await response.text();
+    console.log("RESPUESTA RAW:", text);
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { ok: false, error: "Respuesta no es JSON", raw: text };
+    }
+
+  } catch (err) {
+    console.error("ERROR FETCH:", err);
+    alert("Error de conexión: " + err.message);
+    throw err;
+  }
 }
 
-async function send(data){
-await fetch(URL,{
-method:"POST",
-body:JSON.stringify(data)
-});
+/* =========================
+   CARGAR DATOS
+========================= */
+async function cargarDesdeSheets() {
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL);
+    const data = await res.json();
+
+    console.log("Datos cargados:", data);
+
+    pedidos = data || [];
+    pedidosFiltrados = [...pedidos];
+
+    renderTabla();
+    actualizarDashboard();
+    cargarDistritos();
+
+  } catch (err) {
+    console.error("ERROR GET:", err);
+  }
 }
 
-async function guardarPedido(){
+/* =========================
+   GUARDAR / EDITAR
+========================= */
+async function guardarPedido() {
+  const ahora = new Date();
+  const fechaLocal = ahora.getFullYear() + "-" + 
+    String(ahora.getMonth() + 1).padStart(2, '0') + "-" + 
+    String(ahora.getDate()).padStart(2, '0') + " " + 
+    String(ahora.getHours()).padStart(2, '0') + ":" + 
+    String(ahora.getMinutes()).padStart(2, '0');
 
-const data = {
-id: editandoId || Date.now(),
-cliente: cliente.value,
-telefono: telefono.value,
-direccion: direccion.value,
-distrito: distrito.value,
-vendedor: vendedor.value,
-medioPago: medioPago.value,
-camion: camion.value,
-observaciones: observaciones.value,
-fecha: new Date().toISOString(),
-estado:"Pendiente"
-};
+  const data = {
+    id: editandoId || Date.now(),
+    cliente: document.getElementById("cliente").value,
+    telefono: document.getElementById("telefono").value,
+    direccion: document.getElementById("direccion").value,
+    distrito: document.getElementById("distrito").value,
+    vendedor: document.getElementById("vendedor").value,
+    medioPago: document.getElementById("medioPago").value,
+    camion: document.getElementById("camion").value,
+    observaciones: document.getElementById("observaciones").value,
+    fecha: fechaLocal,
+    estado: "Pendiente"
+  };
 
-if(editandoId){
-await send({action:"update",...data});
-editandoId=null;
-}else{
-await send({action:"add",...data});
+  if (editandoId) {
+    await sendToSheets({ action: "update", ...data });
+    editandoId = null;
+  } else {
+    await sendToSheets({ action: "add", ...data });
+  }
+
+  limpiarFormulario();
+  await cargarDesdeSheets();
 }
 
-await cargar();
-limpiar();
+/* =========================
+   EDITAR
+========================= */
+function editarPedido(id) {
+  const p = pedidos.find(x => String(x.id) === String(id));
+  if (!p) return;
+
+  editandoId = id;
+
+  document.getElementById("cliente").value = p.cliente || "";
+  document.getElementById("telefono").value = p.telefono || "";
+  document.getElementById("direccion").value = p.direccion || "";
+  document.getElementById("distrito").value = p.distrito || "";
+  document.getElementById("vendedor").value = p.vendedor || "";
+  document.getElementById("medioPago").value = p.medioPago || "Efectivo";
+  document.getElementById("camion").value = p.camion || "Camión 1";
+  document.getElementById("observaciones").value = p.observaciones || "";
 }
 
-function editarPedido(id){
-const p = pedidos.find(x=>x.id==id);
-editandoId=id;
+/* =========================
+   ELIMINAR
+========================= */
+async function eliminarPedido(id) {
+  if (!confirm("¿Eliminar pedido?")) return;
 
-cliente.value=p.cliente;
-telefono.value=p.telefono;
-direccion.value=p.direccion;
-distrito.value=p.distrito;
-vendedor.value=p.vendedor;
-medioPago.value=p.medioPago;
-camion.value=p.camion;
-observaciones.value=p.observaciones;
+  await sendToSheets({ action: "delete", id: id });
+  await cargarDesdeSheets();
 }
 
-async function eliminarPedido(id){
-if(!confirm("Eliminar?")) return;
-await send({action:"delete",id});
-await cargar();
+/* =========================
+   ESTADO
+========================= */
+async function cambiarEstado(id) {
+  const p = pedidos.find(x => String(x.id) === String(id));
+  if (!p) return;
+
+  p.estado = p.estado === "Entregado" ? "Pendiente" : "Entregado";
+
+  await sendToSheets({
+    action: "updateStatus",
+    id: p.id,
+    estado: p.estado
+  });
+
+  await cargarDesdeSheets();
 }
 
-async function cambiarEstado(id){
-const p = pedidos.find(x=>x.id==id);
-p.estado = p.estado==="Entregado"?"Pendiente":"Entregado";
-await send({action:"updateStatus",id:p.id,estado:p.estado});
-await cargar();
+/* =========================
+   FILTROS
+========================= */
+function aplicarFiltros() {
+  const d = document.getElementById("filtroDistrito").value;
+  const f = document.getElementById("filtroFecha").value;
+
+  pedidosFiltrados = pedidos.filter(p => {
+    const coincideDistrito = !d || p.distrito === d;
+    const coincideFecha = !f || (p.fecha && p.fecha.startsWith(f));
+    return coincideDistrito && coincideFecha;
+  });
+
+  renderTabla();
 }
 
-function aplicarFiltros(){
-
-const d = filtroDistrito.value;
-const f = filtroFecha.value;
-
-pedidosFiltrados = pedidos.filter(p=>{
-return (!d || p.distrito==d) &&
-(!f || p.fecha.startsWith(f));
-});
-
-render();
+function limpiarFiltros() {
+  document.getElementById("filtroDistrito").value = "";
+  document.getElementById("filtroFecha").value = "";
+  pedidosFiltrados = [...pedidos];
+  renderTabla();
 }
 
-function limpiarFiltros(){
-filtroDistrito.value="";
-filtroFecha.value="";
-aplicarFiltros();
+/* =========================
+   UI
+========================= */
+function actualizarDashboard() {
+  document.getElementById("pendientes").innerText =
+    pedidos.filter(p => p.estado === "Pendiente").length;
+
+  document.getElementById("entregados").innerText =
+    pedidos.filter(p => p.estado === "Entregado").length;
+
+  document.getElementById("total").innerText = pedidos.length;
 }
 
-function render(){
+function cargarDistritos() {
+  const sel = document.getElementById("filtroDistrito");
+  sel.innerHTML = `<option value="">Todos</option>`;
 
-tablaPedidos.innerHTML="";
-
-pedidosFiltrados.forEach(p=>{
-
-tablaPedidos.innerHTML+=`
-<tr>
-<td>${p.id}</td>
-<td>${p.cliente}</td>
-<td>${p.telefono}</td>
-<td>${p.direccion}</td>
-<td>${p.distrito}</td>
-<td>${p.vendedor}</td>
-<td>${p.medioPago}</td>
-<td>${p.camion}</td>
-<td>${new Date(p.fecha).toLocaleString()}</td>
-
-<td class="${p.estado==='Entregado'?'estado-entregado':'estado-pendiente'}">
-${p.estado}
-</td>
-
-<td>${p.observaciones}</td>
-
-<td>
-<button class="btn-check" onclick="cambiarEstado(${p.id})">✓</button>
-<button class="btn-edit" onclick="editarPedido(${p.id})">✏️</button>
-<button class="btn-trash" onclick="eliminarPedido(${p.id})">🗑</button>
-</td>
-</tr>
-`;
-});
+  [...new Set(pedidos.map(p => p.distrito).filter(Boolean))].forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d;
+    opt.textContent = d;
+    sel.appendChild(opt);
+  });
 }
 
-function limpiar(){
-cliente.value="";
-telefono.value="";
-direccion.value="";
-distrito.value="";
-vendedor.value="";
-observaciones.value="";
+function renderTabla() {
+  const tabla = document.getElementById("tablaPedidos");
+  tabla.innerHTML = "";
+
+  pedidosFiltrados.forEach(p => {
+    // Manejo seguro de la fecha
+    let fechaMostrar = "-";
+    if (p.fecha) {
+      try {
+        const fechaObj = new Date(p.fecha);
+        if (!isNaN(fechaObj.getTime())) {
+          fechaMostrar = fechaObj.toLocaleString('es-PE', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        } else {
+          fechaMostrar = p.fecha; // Si no es fecha válida, muestra el texto
+        }
+      } catch (e) {
+        fechaMostrar = p.fecha || "-";
+      }
+    }
+
+    tabla.innerHTML += `
+      <tr>
+        <td>${p.id}</td>
+        <td>${p.cliente || ''}</td>
+        <td>${p.telefono || ''}</td>
+        <td>${p.direccion || ''}</td>
+        <td>${p.distrito || ''}</td>
+        <td>${p.vendedor || ''}</td>
+        <td>${p.medioPago || ''}</td>
+        <td>${p.camion || ''}</td>
+        <td>${fechaMostrar}</td>
+        <td class="${p.estado === 'Entregado' ? 'estado-entregado' : 'estado-pendiente'}">
+          ${p.estado || 'Pendiente'}
+        </td>
+        <td>${p.observaciones || ''}</td>
+        <td>
+          <button class="btn-check" onclick="cambiarEstado('${p.id}')">✓</button>
+          <button class="btn-edit" onclick="editarPedido('${p.id}')">✏️</button>
+          <button class="btn-trash" onclick="eliminarPedido('${p.id}')">🗑</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+/* =========================
+   LIMPIAR FORM
+========================= */
+function limpiarFormulario() {
+  document.getElementById("cliente").value = "";
+  document.getElementById("telefono").value = "";
+  document.getElementById("direccion").value = "";
+  document.getElementById("distrito").value = "";
+  document.getElementById("vendedor").value = "";
+  document.getElementById("observaciones").value = "";
+  editandoId = null;
 }
 
 </script>
