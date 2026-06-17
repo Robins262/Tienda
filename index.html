@@ -6,188 +6,526 @@
 <title>Sistema de Pedidos</title>
 
 <style>
-body{
-font-family:Arial,sans-serif;
-background:#f4f6f9;
-margin:20px;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-h1,h2{color:#333;}
-
-.card-container{
-display:flex;
-gap:15px;
-flex-wrap:wrap;
-margin-bottom:20px;
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  margin: 0;
+  min-height: 100vh;
 }
 
-.card{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
-min-width:180px;
+/* =========================
+   LOGIN PANEL
+========================= */
+#loginPanel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.card h3{
-margin:0;
-font-size:30px;
-color:#007bff;
+.login-box {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
 }
 
-.formulario{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
-margin-bottom:20px;
+.login-box h1 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 28px;
+}
+
+.login-box p {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: border-color 0.3s;
+}
+
+.login-box input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.login-box button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.login-box button:active {
+  transform: scale(0.98);
+}
+
+.login-error {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 10px;
+  display: none;
+}
+
+.login-error.show {
+  display: block;
+}
+
+/* =========================
+   APP CONTENT (oculto inicialmente)
+========================= */
+#appContent {
+  display: none;
+  padding: 20px;
+}
+
+/* Header con usuario */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #555;
+  font-size: 14px;
+}
+
+.user-info span {
+  font-weight: 600;
+  color: #007bff;
+}
+
+.btn-logout {
+  background: linear-gradient(135deg, #dc3545, #a71d2a);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* =========================
+   RESTO DE ESTILOS
+========================= */
+h1, h2 {
+  color: #333;
+}
+
+.card-container {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  min-width: 180px;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 30px;
+  color: #007bff;
+}
+
+.formulario {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
 }
 
 .formulario input,
-.formulario select{
-padding:8px;
-margin:5px;
-width:220px;
+.formulario select {
+  padding: 8px;
+  margin: 5px;
+  width: 220px;
 }
 
-button{
-padding:10px 14px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-weight:600;
-font-size:13px;
-transition: all 0.2s ease;
-box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-button:active{transform:scale(0.97);}
-
-.btn-agregar{background:linear-gradient(135deg,#007bff,#0056d2);color:white;}
-.btn-check{background:linear-gradient(135deg,#28a745,#1e7e34);color:white;padding:6px 10px;font-size:12px;}
-.btn-trash{background:linear-gradient(135deg,#dc3545,#a71d2a);color:white;padding:6px 10px;font-size:12px;}
-.btn-edit{background:linear-gradient(135deg,#ffc107,#e0a800);color:white;padding:6px 10px;font-size:12px;}
-
-.estado-pendiente{color:#dc3545;font-weight:bold;}
-.estado-entregado{color:#28a745;font-weight:bold;}
-
-table{
-width:100%;
-border-collapse:collapse;
-background:white;
+button:active {
+  transform: scale(0.97);
 }
 
-th{
-background:#007bff;
-color:white;
-padding:10px;
+.btn-agregar {
+  background: linear-gradient(135deg, #007bff, #0056d2);
+  color: white;
 }
 
-td{
-padding:10px;
-border-bottom:1px solid #ddd;
-font-size:14px;
+.btn-check {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
 }
 
-.filtros{
-margin-bottom:20px;
+.btn-trash {
+  background: linear-gradient(135deg, #dc3545, #a71d2a);
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.estado-pendiente {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.estado-entregado {
+  color: #28a745;
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th {
+  background: #007bff;
+  color: white;
+  padding: 10px;
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.filtros {
+  margin-bottom: 20px;
 }
 
 .filtros input,
-.filtros select{
-padding:8px;
-margin-right:10px;
+.filtros select {
+  padding: 8px;
+  margin-right: 10px;
+}
+
+/* =========================
+   LOADING OVERLAY
+========================= */
+#loadingOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#loadingOverlay.active {
+  display: flex;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: white;
+  margin-top: 15px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+body.loading button {
+  pointer-events: none;
+  opacity: 0.6;
 }
 </style>
 </head>
 
 <body>
 
-<h1>📦 Sistema de Gestión de Pedidos</h1>
-
-<div class="card-container">
-<div class="card"><h3 id="pendientes">0</h3><p>Pendientes</p></div>
-<div class="card"><h3 id="entregados">0</h3><p>Entregados</p></div>
-<div class="card"><h3 id="total">0</h3><p>Total</p></div>
+<!-- =========================
+     LOGIN PANEL
+========================= -->
+<div id="loginPanel">
+  <div class="login-box">
+    <h1>🔐 Sistema de Pedidos</h1>
+    <p>Ingresa tus credenciales para continuar</p>
+    
+    <input type="text" id="loginUser" placeholder="Usuario" autocomplete="off">
+    <input type="password" id="loginPass" placeholder="Contraseña">
+    
+    <button onclick="iniciarSesion()">Ingresar</button>
+    
+    <div class="login-error" id="loginError">Usuario o contraseña incorrectos</div>
+  </div>
 </div>
 
-<div class="formulario">
-<h2>Nuevo / Editar Pedido</h2>
+<!-- =========================
+     APP CONTENT
+========================= -->
+<div id="appContent">
 
-<input type="text" id="cliente" placeholder="Cliente">
-<input type="text" id="telefono" placeholder="Teléfono">
-<input type="text" id="direccion" placeholder="Dirección">
-<input type="text" id="distrito" placeholder="Distrito">
-<input type="text" id="vendedor" placeholder="Vendedor">
+  <!-- Header con info de usuario -->
+  <div class="app-header">
+    <h1>📦 Sistema de Gestión de Pedidos</h1>
+    <div class="user-info">
+      👤 Usuario: <span id="nombreUsuario">-</span>
+      <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+  </div>
 
-<select id="medioPago">
-<option>Efectivo</option>
-<option>Yape</option>
-<option>Plin</option>
-<option>Transferencia</option>
-<option>Tarjeta</option>
-</select>
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Cargando...</div>
+  </div>
 
-<select id="camion">
-<option>Camión 1</option>
-<option>Camión 2</option>
-<option>Camión 3</option>
-</select>
+  <!-- Dashboard -->
+  <div class="card-container">
+    <div class="card"><h3 id="pendientes">0</h3><p>Pendientes</p></div>
+    <div class="card"><h3 id="entregados">0</h3><p>Entregados</p></div>
+    <div class="card"><h3 id="total">0</h3><p>Total</p></div>
+  </div>
 
-<input type="text" id="observaciones" placeholder="Observaciones">
+  <!-- Formulario -->
+  <div class="formulario">
+    <h2>Nuevo / Editar Pedido</h2>
+    
+    <input type="text" id="cliente" placeholder="Cliente">
+    <input type="text" id="telefono" placeholder="Teléfono">
+    <input type="text" id="direccion" placeholder="Dirección">
+    <input type="text" id="distrito" placeholder="Distrito">
+    <input type="text" id="vendedor" placeholder="Vendedor">
+    
+    <select id="medioPago">
+      <option>Efectivo</option>
+      <option>Yape</option>
+      <option>Plin</option>
+      <option>Transferencia</option>
+      <option>Tarjeta</option>
+    </select>
+    
+    <select id="camion">
+      <option>Camión 1</option>
+      <option>Camión 2</option>
+      <option>Camión 3</option>
+    </select>
+    
+    <input type="text" id="observaciones" placeholder="Observaciones">
+    
+    <button class="btn-agregar" onclick="guardarPedido()">Guardar Pedido</button>
+  </div>
 
-<button class="btn-agregar" onclick="guardarPedido()">Guardar Pedido</button>
+  <!-- Filtros -->
+  <div class="filtros">
+    <select id="filtroDistrito">
+      <option value="">Todos</option>
+    </select>
+    
+    <input type="date" id="filtroFecha">
+    
+    <button onclick="aplicarFiltros()">Filtrar</button>
+    <button onclick="limpiarFiltros()">Limpiar</button>
+  </div>
+
+  <!-- Tabla -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Teléfono</th>
+        <th>Dirección</th>
+        <th>Distrito</th>
+        <th>Vendedor</th>
+        <th>Pago</th>
+        <th>Camión</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Observaciones</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="tablaPedidos"></tbody>
+  </table>
+
 </div>
-
-<div class="filtros">
-<select id="filtroDistrito">
-<option value="">Todos</option>
-</select>
-
-<input type="date" id="filtroFecha">
-
-<button onclick="aplicarFiltros()">Filtrar</button>
-<button onclick="limpiarFiltros()">Limpiar</button>
-</div>
-
-<table>
-<thead>
-<tr>
-<th>ID</th>
-<th>Cliente</th>
-<th>Teléfono</th>
-<th>Dirección</th>
-<th>Distrito</th>
-<th>Vendedor</th>
-<th>Pago</th>
-<th>Camión</th>
-<th>Fecha</th>
-<th>Estado</th>
-<th>Observaciones</th>
-<th>Acción</th>
-</tr>
-</thead>
-
-<tbody id="tablaPedidos"></tbody>
-</table>
 
 <script>
 
 // ============================================
-// CAMBIA ESTA URL POR LA TUYA DE APPS SCRIPT
+// USUARIOS Y CONTRASEÑAS (cambia estos valores)
+// ============================================
+const USUARIOS = {
+  "angela": "angela123",
+};
+
+// ============================================
+// URL DE APPS SCRIPT (cambia por la tuya)
 // ============================================
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7Y0GcErEntZoiw0cQi5VdiCe4OhK3KOU5TCSkMWgedGgClhKrjIscS-uytVozXQbk/exec";
 
 let pedidos = [];
 let pedidosFiltrados = [];
 let editandoId = null;
+let usuarioActual = null;
 
-window.onload = () => cargarDesdeSheets();
+/* =========================
+   LOGIN / SESIÓN
+========================= */
+function iniciarSesion() {
+  const user = document.getElementById("loginUser").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  const errorDiv = document.getElementById("loginError");
+  
+  if (!user || !pass) {
+    errorDiv.textContent = "Ingresa usuario y contraseña";
+    errorDiv.classList.add("show");
+    return;
+  }
+  
+  if (USUARIOS[user] && USUARIOS[user] === pass) {
+    // Login exitoso
+    usuarioActual = user;
+    localStorage.setItem("pedidosUser", user);
+    
+    document.getElementById("nombreUsuario").textContent = user;
+    document.getElementById("loginPanel").style.display = "none";
+    document.getElementById("appContent").style.display = "block";
+    
+    // Cargar datos
+    cargarDesdeSheets();
+  } else {
+    errorDiv.textContent = "Usuario o contraseña incorrectos";
+    errorDiv.classList.add("show");
+    document.getElementById("loginPass").value = "";
+  }
+}
+
+function cerrarSesion() {
+  usuarioActual = null;
+  localStorage.removeItem("pedidosUser");
+  
+  document.getElementById("loginUser").value = "";
+  document.getElementById("loginPass").value = "";
+  document.getElementById("loginError").classList.remove("show");
+  
+  document.getElementById("appContent").style.display = "none";
+  document.getElementById("loginPanel").style.display = "flex";
+}
+
+// Verificar sesión guardada al cargar
+window.onload = function() {
+  const userGuardado = localStorage.getItem("pedidosUser");
+  if (userGuardado && USUARIOS[userGuardado]) {
+    usuarioActual = userGuardado;
+    document.getElementById("nombreUsuario").textContent = userGuardado;
+    document.getElementById("loginPanel").style.display = "none";
+    document.getElementById("appContent").style.display = "block";
+    cargarDesdeSheets();
+  }
+};
+
+// Enter para login
+document.getElementById("loginPass").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") iniciarSesion();
+});
+document.getElementById("loginUser").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") document.getElementById("loginPass").focus();
+});
+
+/* =========================
+   LOADING FUNCTIONS
+========================= */
+function mostrarLoading(mensaje = "Cargando...") {
+  document.querySelector(".loading-text").textContent = mensaje;
+  document.getElementById("loadingOverlay").classList.add("active");
+  document.body.classList.add("loading");
+}
+
+function ocultarLoading() {
+  document.getElementById("loadingOverlay").classList.remove("active");
+  document.body.classList.remove("loading");
+}
 
 /* =========================
    FETCH SEGURO
 ========================= */
 async function sendToSheets(payload) {
+  mostrarLoading("Guardando en Sheets...");
   try {
     const response = await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
@@ -210,6 +548,8 @@ async function sendToSheets(payload) {
     console.error("ERROR FETCH:", err);
     alert("Error de conexión: " + err.message);
     throw err;
+  } finally {
+    ocultarLoading();
   }
 }
 
@@ -217,6 +557,7 @@ async function sendToSheets(payload) {
    CARGAR DATOS
 ========================= */
 async function cargarDesdeSheets() {
+  mostrarLoading("Cargando pedidos...");
   try {
     const res = await fetch(GOOGLE_SCRIPT_URL);
     const data = await res.json();
@@ -232,6 +573,8 @@ async function cargarDesdeSheets() {
 
   } catch (err) {
     console.error("ERROR GET:", err);
+  } finally {
+    ocultarLoading();
   }
 }
 
@@ -275,8 +618,13 @@ async function guardarPedido() {
    EDITAR
 ========================= */
 function editarPedido(id) {
+  mostrarLoading("Cargando pedido...");
+  
   const p = pedidos.find(x => String(x.id) === String(id));
-  if (!p) return;
+  if (!p) {
+    ocultarLoading();
+    return;
+  }
 
   editandoId = id;
 
@@ -288,6 +636,10 @@ function editarPedido(id) {
   document.getElementById("medioPago").value = p.medioPago || "Efectivo";
   document.getElementById("camion").value = p.camion || "Camión 1";
   document.getElementById("observaciones").value = p.observaciones || "";
+  
+  document.querySelector(".formulario").scrollIntoView({ behavior: "smooth" });
+  
+  ocultarLoading();
 }
 
 /* =========================
@@ -304,24 +656,34 @@ async function eliminarPedido(id) {
    ESTADO
 ========================= */
 async function cambiarEstado(id) {
+  mostrarLoading("Actualizando estado...");
+  
   const p = pedidos.find(x => String(x.id) === String(id));
-  if (!p) return;
+  if (!p) {
+    ocultarLoading();
+    return;
+  }
 
   p.estado = p.estado === "Entregado" ? "Pendiente" : "Entregado";
 
-  await sendToSheets({
-    action: "updateStatus",
-    id: p.id,
-    estado: p.estado
-  });
-
-  await cargarDesdeSheets();
+  try {
+    await sendToSheets({
+      action: "updateStatus",
+      id: p.id,
+      estado: p.estado
+    });
+    await cargarDesdeSheets();
+  } catch (err) {
+    ocultarLoading();
+  }
 }
 
 /* =========================
    FILTROS
 ========================= */
 function aplicarFiltros() {
+  mostrarLoading("Filtrando...");
+  
   const d = document.getElementById("filtroDistrito").value;
   const f = document.getElementById("filtroFecha").value;
 
@@ -332,13 +694,19 @@ function aplicarFiltros() {
   });
 
   renderTabla();
+  
+  setTimeout(ocultarLoading, 300);
 }
 
 function limpiarFiltros() {
+  mostrarLoading("Limpiando filtros...");
+  
   document.getElementById("filtroDistrito").value = "";
   document.getElementById("filtroFecha").value = "";
   pedidosFiltrados = [...pedidos];
   renderTabla();
+  
+  setTimeout(ocultarLoading, 300);
 }
 
 /* =========================
@@ -371,7 +739,6 @@ function renderTabla() {
   tabla.innerHTML = "";
 
   pedidosFiltrados.forEach(p => {
-    // Manejo seguro de la fecha
     let fechaMostrar = "-";
     if (p.fecha) {
       try {
@@ -385,7 +752,7 @@ function renderTabla() {
             minute: '2-digit'
           });
         } else {
-          fechaMostrar = p.fecha; // Si no es fecha válida, muestra el texto
+          fechaMostrar = p.fecha;
         }
       } catch (e) {
         fechaMostrar = p.fecha || "-";
