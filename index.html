@@ -100,14 +100,13 @@ body {
 }
 
 /* =========================
-   APP CONTENT (oculto inicialmente)
+   APP CONTENT
 ========================= */
 #appContent {
   display: none;
   padding: 20px;
 }
 
-/* Header con usuario */
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -186,6 +185,11 @@ h1, h2 {
   width: 220px;
 }
 
+/* Input de ubicación más ancho */
+.formulario input#ubicacion {
+  width: 460px;
+}
+
 button {
   padding: 10px 14px;
   border: none;
@@ -225,6 +229,62 @@ button:active {
   color: white;
   padding: 6px 10px;
   font-size: 12px;
+}
+
+/* Botón de ubicación estilo dropdown */
+.btn-maps {
+  background: linear-gradient(135deg, #17a2b8, #117a8b);
+  color: white;
+  padding: 6px 12px;
+  font-size: 12px;
+  position: relative;
+}
+
+.btn-maps:hover {
+  background: linear-gradient(135deg, #138496, #0c525d);
+}
+
+/* Dropdown de ubicación */
+.dropdown-maps {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 200px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  z-index: 100;
+  padding: 10px;
+  right: 0;
+}
+
+.dropdown-content.show {
+  display: block;
+}
+
+.dropdown-content a {
+  color: #007bff;
+  text-decoration: none;
+  display: block;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdown-content .no-ubicacion {
+  color: #666;
+  font-size: 13px;
+  padding: 8px;
+  text-align: center;
 }
 
 .estado-pendiente {
@@ -338,7 +398,7 @@ body.loading button {
 ========================= -->
 <div id="appContent">
 
-  <!-- Header con info de usuario -->
+  <!-- Header -->
   <div class="app-header">
     <h1>📦 Sistema de Gestión de Pedidos</h1>
     <div class="user-info">
@@ -347,7 +407,7 @@ body.loading button {
     </div>
   </div>
 
-  <!-- LOADING OVERLAY -->
+  <!-- LOADING -->
   <div id="loadingOverlay">
     <div class="loading-spinner"></div>
     <div class="loading-text">Cargando...</div>
@@ -384,6 +444,9 @@ body.loading button {
       <option>Camión 3</option>
     </select>
     
+    <!-- NUEVO: Campo de ubicación Google Maps -->
+    <input type="text" id="ubicacion" placeholder="🔗 Link de Google Maps (ubicación de entrega)">
+    
     <input type="text" id="observaciones" placeholder="Observaciones">
     
     <button class="btn-agregar" onclick="guardarPedido()">Guardar Pedido</button>
@@ -415,6 +478,7 @@ body.loading button {
         <th>Camión</th>
         <th>Fecha</th>
         <th>Estado</th>
+        <th>Ubicación</th>
         <th>Observaciones</th>
         <th>Acción</th>
       </tr>
@@ -427,16 +491,16 @@ body.loading button {
 <script>
 
 // ============================================
-// USUARIOS Y CONTRASEÑAS (cambia estos valores)
+// USUARIOS
 // ============================================
 const USUARIOS = {
   "angela": "angela123",
 };
 
 // ============================================
-// URL DE APPS SCRIPT (cambia por la tuya)
+// URL DE APPS SCRIPT
 // ============================================
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7Y0GcErEntZoiw0cQi5VdiCe4OhK3KOU5TCSkMWgedGgClhKrjIscS-uytVozXQbk/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyxEla57bfhiIVfKUG98XWXuOroGtB8uidv5wuy2IgvHsSbBDhUbsu_SmBFf89mFdw/exec";
 
 let pedidos = [];
 let pedidosFiltrados = [];
@@ -458,7 +522,6 @@ function iniciarSesion() {
   }
   
   if (USUARIOS[user] && USUARIOS[user] === pass) {
-    // Login exitoso
     usuarioActual = user;
     localStorage.setItem("pedidosUser", user);
     
@@ -466,7 +529,6 @@ function iniciarSesion() {
     document.getElementById("loginPanel").style.display = "none";
     document.getElementById("appContent").style.display = "block";
     
-    // Cargar datos
     cargarDesdeSheets();
   } else {
     errorDiv.textContent = "Usuario o contraseña incorrectos";
@@ -485,9 +547,11 @@ function cerrarSesion() {
   
   document.getElementById("appContent").style.display = "none";
   document.getElementById("loginPanel").style.display = "flex";
+  
+  // Cerrar todos los dropdowns abiertos
+  document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
 }
 
-// Verificar sesión guardada al cargar
 window.onload = function() {
   const userGuardado = localStorage.getItem("pedidosUser");
   if (userGuardado && USUARIOS[userGuardado]) {
@@ -499,7 +563,6 @@ window.onload = function() {
   }
 };
 
-// Enter para login
 document.getElementById("loginPass").addEventListener("keypress", function(e) {
   if (e.key === "Enter") iniciarSesion();
 });
@@ -508,7 +571,7 @@ document.getElementById("loginUser").addEventListener("keypress", function(e) {
 });
 
 /* =========================
-   LOADING FUNCTIONS
+   LOADING
 ========================= */
 function mostrarLoading(mensaje = "Cargando...") {
   document.querySelector(".loading-text").textContent = mensaje;
@@ -598,6 +661,7 @@ async function guardarPedido() {
     vendedor: document.getElementById("vendedor").value,
     medioPago: document.getElementById("medioPago").value,
     camion: document.getElementById("camion").value,
+    ubicacion: document.getElementById("ubicacion").value,  // NUEVO
     observaciones: document.getElementById("observaciones").value,
     fecha: fechaLocal,
     estado: "Pendiente"
@@ -635,6 +699,7 @@ function editarPedido(id) {
   document.getElementById("vendedor").value = p.vendedor || "";
   document.getElementById("medioPago").value = p.medioPago || "Efectivo";
   document.getElementById("camion").value = p.camion || "Camión 1";
+  document.getElementById("ubicacion").value = p.ubicacion || "";  // NUEVO
   document.getElementById("observaciones").value = p.observaciones || "";
   
   document.querySelector(".formulario").scrollIntoView({ behavior: "smooth" });
@@ -710,6 +775,28 @@ function limpiarFiltros() {
 }
 
 /* =========================
+   DROPDOWN UBICACIÓN
+========================= */
+function toggleDropdown(id) {
+  // Cerrar todos los demás dropdowns
+  document.querySelectorAll(".dropdown-content").forEach(d => {
+    if (d.id !== "dropdown-" + id) {
+      d.classList.remove("show");
+    }
+  });
+  
+  const dropdown = document.getElementById("dropdown-" + id);
+  dropdown.classList.toggle("show");
+}
+
+// Cerrar dropdowns al hacer clic fuera
+window.onclick = function(event) {
+  if (!event.target.matches('.btn-maps') && !event.target.matches('.btn-maps *')) {
+    document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+  }
+};
+
+/* =========================
    UI
 ========================= */
 function actualizarDashboard() {
@@ -759,6 +846,27 @@ function renderTabla() {
       }
     }
 
+    // Botón de ubicación con dropdown
+    let ubicacionHTML = "";
+    if (p.ubicacion && p.ubicacion.trim() !== "") {
+      ubicacionHTML = `
+        <div class="dropdown-maps">
+          <button class="btn-maps" onclick="toggleDropdown('${p.id}')">📍 Ver Ubicación ▼</button>
+          <div class="dropdown-content" id="dropdown-${p.id}">
+            <a href="${p.ubicacion}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
+              🗺️ Abrir en Google Maps
+            </a>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 5px 0;">
+            <div style="font-size: 11px; color: #666; padding: 0 8px; word-break: break-all;">
+              ${p.ubicacion}
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      ubicacionHTML = `<span style="color: #999; font-size: 12px;">Sin ubicación</span>`;
+    }
+
     tabla.innerHTML += `
       <tr>
         <td>${p.id}</td>
@@ -773,6 +881,7 @@ function renderTabla() {
         <td class="${p.estado === 'Entregado' ? 'estado-entregado' : 'estado-pendiente'}">
           ${p.estado || 'Pendiente'}
         </td>
+        <td>${ubicacionHTML}</td>
         <td>${p.observaciones || ''}</td>
         <td>
           <button class="btn-check" onclick="cambiarEstado('${p.id}')">✓</button>
@@ -793,6 +902,9 @@ function limpiarFormulario() {
   document.getElementById("direccion").value = "";
   document.getElementById("distrito").value = "";
   document.getElementById("vendedor").value = "";
+  document.getElementById("medioPago").selectedIndex = 0;
+  document.getElementById("camion").selectedIndex = 0;
+  document.getElementById("ubicacion").value = "";  // NUEVO
   document.getElementById("observaciones").value = "";
   editandoId = null;
 }
