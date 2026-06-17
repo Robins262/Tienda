@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Pedidos</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f4f6f9;
+margin:20px;
+}
+
+h1,h2{color:#333;}
+
+.card-container{
+display:flex;
+gap:15px;
+flex-wrap:wrap;
+margin-bottom:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+min-width:180px;
+}
+
+.card h3{
+margin:0;
+font-size:30px;
+color:#007bff;
+}
+
+.formulario{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+margin-bottom:20px;
+}
+
+.formulario input,
+.formulario select{
+padding:8px;
+margin:5px;
+width:220px;
+}
+
+button{
+padding:8px 12px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.btn-agregar{background:#007bff;color:white;}
+.btn-exportar{background:#28a745;color:white;}
+.btn-entregado{background:#28a745;color:white;}
+.btn-revertir{background:#dc3545;color:white;}
+.btn-eliminar{background:#6c757d;color:white;}
+.btn-eliminar:hover{background:#495057;}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+th{
+background:#007bff;
+color:white;
+padding:10px;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #ddd;
+font-size:14px;
+}
+
+.estado-pendiente{color:#dc3545;font-weight:bold;}
+.estado-entregado{color:#28a745;font-weight:bold;}
+
+.filtros{
+margin-bottom:20px;
+}
+
+.filtros input,
+.filtros select{
+padding:8px;
+margin-right:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📦 Sistema de Gestión de Pedidos</h1>
+
+<div class="card-container">
+<div class="card">
+<h3 id="pendientes">0</h3>
+<p>Pendientes</p>
+</div>
+
+<div class="card">
+<h3 id="entregados">0</h3>
+<p>Entregados</p>
+</div>
+
+<div class="card">
+<h3 id="total">0</h3>
+<p>Total</p>
+</div>
+</div>
+
+<div class="formulario">
+<h2>Nuevo Pedido</h2>
+
+<input type="text" id="cliente" placeholder="Cliente">
+<input type="text" id="telefono" placeholder="Teléfono">
+<input type="text" id="direccion" placeholder="Dirección">
+<input type="text" id="distrito" placeholder="Distrito">
+
+<select id="camion">
+<option>Camión 1</option>
+<option>Camión 2</option>
+<option>Camión 3</option>
+</select>
+
+<input type="text" id="observaciones" placeholder="Observaciones">
+
+<button class="btn-agregar" onclick="agregarPedido()">
+Agregar Pedido
+</button>
+</div>
+
+<div class="filtros">
+<select id="filtroDistrito">
+<option value="">Todos</option>
+</select>
+
+<input type="date" id="filtroFecha">
+
+<button onclick="filtrarPedidos()">Filtrar</button>
+<button onclick="limpiarFiltros()">Limpiar</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Cliente</th>
+<th>Teléfono</th>
+<th>Dirección</th>
+<th>Distrito</th>
+<th>Camión</th>
+<th>Fecha</th>
+<th>Estado</th>
+<th>Observaciones</th>
+<th>Acción</th>
+</tr>
+</thead>
+
+<tbody id="tablaPedidos"></tbody>
+</table>
+
+<script>
+
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4Esg8fJHTWK3GXuTPcpDz3z4rKfQqX-UNd7FgNCQxBhmRVIKZ_qVPlfu9cvVQmQ/exec";
+
+let pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
+let pedidosFiltrados = [...pedidos];
+
+function guardarLocal(){
+localStorage.setItem("pedidos", JSON.stringify(pedidos));
+}
+
+/* =========================
+   GOOGLE SHEETS CONEXIÓN
+========================= */
+
+async function sendToSheets(payload){
+try{
+await fetch(GOOGLE_SCRIPT_URL,{
+method:"POST",
+body: JSON.stringify(payload)
+});
+}catch(e){
+console.log("Sheets error:",e);
+}
+}
+
+/* =========================
+   AGREGAR
+========================= */
+
+async function agregarPedido(){
+
+const cliente = document.getElementById("cliente").value;
+if(cliente.trim()===""){
+alert("Ingrese cliente");
+return;
+}
+
+const nuevo = {
+id: Date.now(),
+cliente,
+telefono: document.getElementById("telefono").value,
+direccion: document.getElementById("direccion").value,
+distrito: document.getElementById("distrito").value,
+camion: document.getElementById("camion").value,
+observaciones: document.getElementById("observaciones").value,
+fecha: new Date().toISOString(),
+estado: "Pendiente"
+};
+
+pedidos.push(nuevo);
+guardarLocal();
+
+await sendToSheets({
+action:"add",
+...nuevo
+});
+
+limpiarFormulario();
+cargarDistritos();
+renderTabla();
+}
+
+/* =========================
+   ELIMINAR
+========================= */
+
+async function eliminarPedido(id){
+
+const p = pedidos.find(x=>x.id===id);
+if(!p) return;
+
+if(!confirm(`¿Eliminar pedido de ${p.cliente}?`)) return;
+
+pedidos = pedidos.filter(x=>x.id!==id);
+guardarLocal();
+
+await sendToSheets({
+action:"delete",
+id:id
+});
+
+cargarDistritos();
+renderTabla();
+}
+
+/* =========================
+   CAMBIAR ESTADO
+========================= */
+
+async function cambiarEstado(id){
+
+const p = pedidos.find(x=>x.id===id);
+if(!p) return;
+
+p.estado = p.estado==="Entregado" ? "Pendiente" : "Entregado";
+
+guardarLocal();
+
+await sendToSheets({
+action:"updateStatus",
+id:id,
+estado:p.estado
+});
+
+renderTabla();
+}
+
+/* =========================
+   FILTROS
+========================= */
+
+function filtrarPedidos(){
+
+const d = document.getElementById("filtroDistrito").value;
+const f = document.getElementById("filtroFecha").value;
+
+pedidosFiltrados = pedidos.filter(p=>{
+return (!d || p.distrito===d) &&
+(!f || p.fecha.startsWith(f));
+});
+
+renderTabla();
+}
+
+function limpiarFiltros(){
+pedidosFiltrados = [...pedidos];
+renderTabla();
+}
+
+/* =========================
+   UI
+========================= */
+
+function actualizarDashboard(){
+
+document.getElementById("pendientes").innerText =
+pedidos.filter(p=>p.estado==="Pendiente").length;
+
+document.getElementById("entregados").innerText =
+pedidos.filter(p=>p.estado==="Entregado").length;
+
+document.getElementById("total").innerText = pedidos.length;
+}
+
+function renderTabla(){
+
+const t = document.getElementById("tablaPedidos");
+t.innerHTML="";
+
+pedidosFiltrados.forEach(p=>{
+
+t.innerHTML += `
+<tr>
+<td>${p.id}</td>
+<td>${p.cliente}</td>
+<td>${p.telefono}</td>
+<td>${p.direccion}</td>
+<td>${p.distrito}</td>
+<td>${p.camion}</td>
+<td>${new Date(p.fecha).toLocaleString()}</td>
+
+<td class="${p.estado==="Entregado"?'estado-entregado':'estado-pendiente'}">
+${p.estado}
+</td>
+
+<td>${p.observaciones}</td>
+
+<td>
+<button onclick="cambiarEstado(${p.id})">✔</button>
+<button onclick="eliminarPedido(${p.id})">🗑</button>
+</td>
+</tr>
+`;
+});
+
+actualizarDashboard();
+}
+
+function cargarDistritos(){
+
+const sel = document.getElementById("filtroDistrito");
+sel.innerHTML = `<option value="">Todos</option>`;
+
+const ds = [...new Set(pedidos.map(p=>p.distrito))];
+
+ds.forEach(d=>{
+const opt = document.createElement("option");
+opt.value = d;
+opt.textContent = d;
+sel.appendChild(opt);
+});
+}
+
+cargarDistritos();
+renderTabla();
+
+</script>
+
+</body>
+</html>
