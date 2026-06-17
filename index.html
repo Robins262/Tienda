@@ -50,20 +50,37 @@ margin:5px;
 width:220px;
 }
 
+/* BOTONES GENERALES */
 button{
-padding:8px 12px;
+padding:10px 14px;
 border:none;
-border-radius:5px;
+border-radius:8px;
 cursor:pointer;
+font-weight:600;
+font-size:13px;
+transition: all 0.2s ease;
+box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-.btn-agregar{background:#007bff;color:white;}
-.btn-exportar{background:#28a745;color:white;}
-.btn-entregado{background:#28a745;color:white;}
-.btn-revertir{background:#dc3545;color:white;}
-.btn-eliminar{background:#6c757d;color:white;}
-.btn-eliminar:hover{background:#495057;}
+button:active{
+transform: scale(0.97);
+}
 
+/* PRINCIPALES */
+.btn-agregar{
+background:linear-gradient(135deg,#007bff,#0056d2);
+color:white;
+}
+.btn-exportar{
+background:linear-gradient(135deg,#28a745,#1e7e34);
+color:white;
+}
+
+/* ESTADOS */
+.estado-pendiente{color:#dc3545;font-weight:bold;}
+.estado-entregado{color:#28a745;font-weight:bold;}
+
+/* TABLA */
 table{
 width:100%;
 border-collapse:collapse;
@@ -82,9 +99,7 @@ border-bottom:1px solid #ddd;
 font-size:14px;
 }
 
-.estado-pendiente{color:#dc3545;font-weight:bold;}
-.estado-entregado{color:#28a745;font-weight:bold;}
-
+/* FILTROS */
 .filtros{
 margin-bottom:20px;
 }
@@ -93,6 +108,36 @@ margin-bottom:20px;
 .filtros select{
 padding:8px;
 margin-right:10px;
+}
+
+/* =========================
+   BOTONES MINI (CHECK & DELETE)
+========================= */
+
+.btn-check{
+background:linear-gradient(135deg,#28a745,#1e7e34);
+color:white;
+padding:6px 10px;
+border-radius:8px;
+font-size:12px;
+}
+
+.btn-check:hover{
+transform: translateY(-2px);
+box-shadow:0 6px 14px rgba(40,167,69,0.35);
+}
+
+.btn-trash{
+background:linear-gradient(135deg,#dc3545,#a71d2a);
+color:white;
+padding:6px 10px;
+border-radius:8px;
+font-size:12px;
+}
+
+.btn-trash:hover{
+transform: translateY(-2px);
+box-shadow:0 6px 14px rgba(220,53,69,0.35);
 }
 </style>
 </head>
@@ -181,7 +226,7 @@ localStorage.setItem("pedidos", JSON.stringify(pedidos));
 }
 
 /* =========================
-   GOOGLE SHEETS CONEXIÓN
+   GOOGLE SHEETS
 ========================= */
 
 async function sendToSheets(payload){
@@ -190,9 +235,7 @@ await fetch(GOOGLE_SCRIPT_URL,{
 method:"POST",
 body: JSON.stringify(payload)
 });
-}catch(e){
-console.log("Sheets error:",e);
-}
+}catch(e){}
 }
 
 /* =========================
@@ -202,10 +245,7 @@ console.log("Sheets error:",e);
 async function agregarPedido(){
 
 const cliente = document.getElementById("cliente").value;
-if(cliente.trim()===""){
-alert("Ingrese cliente");
-return;
-}
+if(cliente.trim()==="") return alert("Ingrese cliente");
 
 const nuevo = {
 id: Date.now(),
@@ -222,13 +262,8 @@ estado: "Pendiente"
 pedidos.push(nuevo);
 guardarLocal();
 
-await sendToSheets({
-action:"add",
-...nuevo
-});
+await sendToSheets({action:"add", ...nuevo});
 
-limpiarFormulario();
-cargarDistritos();
 renderTabla();
 }
 
@@ -246,17 +281,13 @@ if(!confirm(`¿Eliminar pedido de ${p.cliente}?`)) return;
 pedidos = pedidos.filter(x=>x.id!==id);
 guardarLocal();
 
-await sendToSheets({
-action:"delete",
-id:id
-});
+await sendToSheets({action:"delete", id});
 
-cargarDistritos();
 renderTabla();
 }
 
 /* =========================
-   CAMBIAR ESTADO
+   ESTADO
 ========================= */
 
 async function cambiarEstado(id){
@@ -270,7 +301,7 @@ guardarLocal();
 
 await sendToSheets({
 action:"updateStatus",
-id:id,
+id,
 estado:p.estado
 });
 
@@ -338,8 +369,8 @@ ${p.estado}
 <td>${p.observaciones}</td>
 
 <td>
-<button onclick="cambiarEstado(${p.id})">✔</button>
-<button onclick="eliminarPedido(${p.id})">🗑</button>
+<button class="btn-check" onclick="cambiarEstado(${p.id})">✓</button>
+<button class="btn-trash" onclick="eliminarPedido(${p.id})">🗑</button>
 </td>
 </tr>
 `;
@@ -365,12 +396,13 @@ sel.appendChild(opt);
 
 cargarDistritos();
 renderTabla();
-setInterval(() => {
-  const data = JSON.parse(localStorage.getItem("pedidos")) || [];
-  pedidos = data;
-  pedidosFiltrados = [...pedidos];
-  renderTabla();
-}, 2000);
+
+setInterval(()=>{
+const data = JSON.parse(localStorage.getItem("pedidos")) || [];
+pedidos = data;
+pedidosFiltrados = [...pedidos];
+renderTabla();
+},2000);
 
 </script>
 
