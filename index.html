@@ -216,7 +216,7 @@ Agregar Pedido
 
 <script>
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4Esg8fJHTWK3GXuTPcpDz3z4rKfQqX-UNd7FgNCQxBhmRVIKZ_qVPlfu9cvVQmQ/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKJXQh4zXXHWA6Y9LkHQK3t1-_G3yB7RahlXLN7Z4MzNg77EH9eL-81jKQTDC5R-s/exec";
 
 let pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
 let pedidosFiltrados = [...pedidos];
@@ -306,6 +306,19 @@ estado:p.estado
 });
 
 renderTabla();
+}
+async function cargarDesdeSheets(){
+
+const res = await fetch(GOOGLE_SCRIPT_URL);
+const data = await res.json();
+
+pedidos = data;
+pedidosFiltrados = [...pedidos];
+
+renderTabla();
+actualizarDashboard();
+cargarDistritos();
+
 }
 
 /* =========================
@@ -397,12 +410,10 @@ sel.appendChild(opt);
 cargarDistritos();
 renderTabla();
 
-setInterval(()=>{
-const data = JSON.parse(localStorage.getItem("pedidos")) || [];
-pedidos = data;
-pedidosFiltrados = [...pedidos];
-renderTabla();
-},2000);
+
+setInterval(() => {
+  cargarDesdeSheets();
+}, 3000);
 
 </script>
 
