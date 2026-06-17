@@ -170,6 +170,7 @@ box-shadow:0 6px 14px rgba(220,53,69,0.35);
 <input type="text" id="telefono" placeholder="Teléfono">
 <input type="text" id="direccion" placeholder="Dirección">
 <input type="text" id="distrito" placeholder="Distrito">
+<input type="text" id="vendedor" placeholder="Vendedor">
 
 <select id="camion">
 <option>Camión 1</option>
@@ -191,7 +192,7 @@ Agregar Pedido
 
 <input type="date" id="filtroFecha">
 
-<button onclick="filtrarPedidos()">Filtrar</button>
+<button onclick="aplicarFiltros()">Filtrar</button>
 <button onclick="limpiarFiltros()">Limpiar</button>
 </div>
 
@@ -207,6 +208,7 @@ Agregar Pedido
 <th>Fecha</th>
 <th>Estado</th>
 <th>Observaciones</th>
+<th>Vendedor</th>
 <th>Acción</th>
 </tr>
 </thead>
@@ -255,6 +257,7 @@ direccion: document.getElementById("direccion").value,
 distrito: document.getElementById("distrito").value,
 camion: document.getElementById("camion").value,
 observaciones: document.getElementById("observaciones").value,
+vendedor: document.getElementById("vendedor").value,
 fecha: new Date().toISOString(),
 estado: "Pendiente"
 };
@@ -308,30 +311,29 @@ estado:p.estado
 renderTabla();
 }
 async function cargarDesdeSheets(){
-
 const res = await fetch(GOOGLE_SCRIPT_URL);
 const data = await res.json();
 
-pedidos = data;
-pedidosFiltrados = [...pedidos];
+pedidos = data || [];
 
-renderTabla();
+/* 🔥 IMPORTANTE: respeta filtros activos */
+aplicarFiltros();
+
 actualizarDashboard();
 cargarDistritos();
-
 }
 
 /* =========================
    FILTROS
 ========================= */
 
-function filtrarPedidos(){
+function aplicarFiltros(){
 
 const d = document.getElementById("filtroDistrito").value;
 const f = document.getElementById("filtroFecha").value;
 
 pedidosFiltrados = pedidos.filter(p=>{
-return (!d || p.distrito===d) &&
+return (!d || p.distrito === d) &&
 (!f || p.fecha.startsWith(f));
 });
 
@@ -339,10 +341,11 @@ renderTabla();
 }
 
 function limpiarFiltros(){
-pedidosFiltrados = [...pedidos];
-renderTabla();
-}
+document.getElementById("filtroDistrito").value = "";
+document.getElementById("filtroFecha").value = "";
 
+aplicarFiltros();
+}
 /* =========================
    UI
 ========================= */
@@ -380,6 +383,7 @@ ${p.estado}
 </td>
 
 <td>${p.observaciones}</td>
+<td>${p.vendedor || ""}</td>
 
 <td>
 <button class="btn-check" onclick="cambiarEstado(${p.id})">✓</button>
@@ -413,7 +417,7 @@ renderTabla();
 
 setInterval(() => {
   cargarDesdeSheets();
-}, 500);
+}, 3000);
 
 </script>
 
