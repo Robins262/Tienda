@@ -365,6 +365,12 @@ sel.appendChild(opt);
 
 cargarDistritos();
 renderTabla();
+setInterval(() => {
+  const data = JSON.parse(localStorage.getItem("pedidos")) || [];
+  pedidos = data;
+  pedidosFiltrados = [...pedidos];
+  renderTabla();
+}, 2000);
 
 </script>
 
