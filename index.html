@@ -679,6 +679,21 @@ tr:hover { background: #f8f9fa; }
   transform: scale(1.1);
 }
 
+/* Info de imagen */
+.img-info {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.img-info.error {
+  color: #dc3545;
+}
+
+.img-info.success {
+  color: #28a745;
+}
+
 /* Modal imagen */
 .modal-img {
   display: none;
@@ -996,7 +1011,7 @@ const USUARIOS = {
 // ============================================
 // URL DE APPS SCRIPT (CAMBIA POR LA TUYA)
 // ============================================
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRUqN-O4NL357Mwa6npKuH0BHuqZwJgvNgtJb8lVL2ft81EGtFCD-YSALlsreROezD/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUm1YHYN4VFt9HRWJbvweNkTSsVAwIpqj8R5JhkkNBSGbXmz0sViEZ0nDGivtMtQJG/exec";
 
 let pedidos = [];
 let pedidosFiltrados = [];
@@ -1120,18 +1135,71 @@ function previsualizarImagen(event) {
     return;
   }
 
-  if (file.size > 2 * 1024 * 1024) {
-    mostrarToast("❌ La imagen debe ser menor a 2MB", "error");
-    return;
+  // Mostrar info del archivo original
+  const infoDiv = document.getElementById("imgInfo");
+  if (infoDiv) {
+    infoDiv.textContent = `📁 Original: ${(file.size / 1024).toFixed(1)} KB`;
+    infoDiv.className = "img-info";
   }
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    imagenBase64 = e.target.result;
+  // Comprimir imagen antes de convertir a base64
+  comprimirImagen(file, 800, 600, 0.7).then(compressedBase64 => {
+    imagenBase64 = compressedBase64;
     document.getElementById("previewImg").src = imagenBase64;
     document.getElementById("previewContainer").style.display = "block";
-  };
-  reader.readAsDataURL(file);
+
+    const compressedSize = Math.round(imagenBase64.length * 0.75 / 1024);
+    if (infoDiv) {
+      infoDiv.textContent = `📁 Original: ${(file.size / 1024).toFixed(1)} KB → Comprimida: ~${compressedSize} KB`;
+      infoDiv.className = "img-info success";
+    }
+
+    console.log("Imagen comprimida:", compressedSize, "KB");
+    console.log("Base64 length:", imagenBase64.length);
+  }).catch(err => {
+    if (infoDiv) {
+      infoDiv.textContent = "❌ Error al comprimir: " + err.message;
+      infoDiv.className = "img-info error";
+    }
+    mostrarToast("Error al procesar imagen", "error");
+  });
+}
+
+function comprimirImagen(file, maxWidth, maxHeight, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        let width = img.width;
+        let height = img.height;
+
+        // Calcular nuevo tamaño manteniendo proporción
+        if (width > maxWidth) {
+          height = Math.round(height * maxWidth / width);
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = Math.round(width * maxHeight / height);
+          height = maxHeight;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convertir a base64 JPEG con calidad reducida
+        const base64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(base64);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 function limpiarImagen() {
@@ -1139,6 +1207,8 @@ function limpiarImagen() {
   document.getElementById("imgBoleta").value = "";
   document.getElementById("previewImg").src = "";
   document.getElementById("previewContainer").style.display = "none";
+  const infoDiv = document.getElementById("imgInfo");
+  if (infoDiv) infoDiv.textContent = "";
 }
 
 function abrirModalImg(src) {
@@ -1239,6 +1309,9 @@ async function guardarPedido() {
     enviarHoy: "No"
   };
 
+  console.log("Enviando datos:", data);
+  console.log("imgBoleta length:", data.imgBoleta ? data.imgBoleta.length : 0);
+
   if (editandoId) {
     await sendToSheets({ action: "update", ...data });
     editandoId = null;
@@ -1278,10 +1351,16 @@ function editarPedido(id) {
   document.getElementById("observaciones").value = p.observaciones || "";
 
   // Cargar imagen si existe
-  if (p.imgBoleta && p.imgBoleta.trim() !== "") {
+  if (p.imgBoleta && p.imgBoleta.trim() !== "" && p.imgBoleta.startsWith("data:image")) {
     imagenBase64 = p.imgBoleta;
     document.getElementById("previewImg").src = imagenBase64;
     document.getElementById("previewContainer").style.display = "block";
+    const sizeKB = Math.round(imagenBase64.length * 0.75 / 1024);
+    const infoDiv = document.getElementById("imgInfo");
+    if (infoDiv) {
+      infoDiv.textContent = `📷 Imagen cargada: ~${sizeKB} KB`;
+      infoDiv.className = "img-info success";
+    }
   } else {
     limpiarImagen();
   }
@@ -1428,7 +1507,7 @@ function renderRutas() {
 
     // Generar el listado de ubicaciones con links directos
     const listadoUbicacionesHTML = pedidosCamion.map((p, i) => {
-      const imgHtml = (p.imgBoleta && p.imgBoleta.trim() !== "") 
+      const imgHtml = (p.imgBoleta && p.imgBoleta.trim() !== "" && p.imgBoleta.startsWith("data:image")) 
         ? `<div class="img-boleta"><img src="${p.imgBoleta}" onclick="abrirModalImg('${p.imgBoleta}')" title="Click para ampliar"></div>`
         : '';
 
@@ -1650,7 +1729,7 @@ function renderTabla() {
 
     // Imagen de boleta miniatura
     let boletaHTML = `<span style="color:#999; font-size:12px;">—</span>`;
-    if (p.imgBoleta && p.imgBoleta.trim() !== "") {
+    if (p.imgBoleta && p.imgBoleta.trim() !== "" && p.imgBoleta.startsWith("data:image")) {
       boletaHTML = `<img src="${p.imgBoleta}" class="img-miniatura" onclick="abrirModalImg('${p.imgBoleta}')" title="Click para ampliar">`;
     }
 
