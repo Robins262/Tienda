@@ -747,7 +747,6 @@ body.loading button {
   .acciones-ruta-principales a { min-width: 100%; }
 }
 </style>
-<base target="_blank">
 </head>
 
 <body>
@@ -801,7 +800,7 @@ body.loading button {
 
     <div class="formulario">
       <h2>📝 Nuevo / Editar Pedido</h2>
-
+      
       <div class="form-row">
         <input type="text" id="cliente" placeholder="Cliente" style="width:220px;">
         <input type="text" id="dni" placeholder="DNI" style="width:120px;">
@@ -809,7 +808,7 @@ body.loading button {
         <input type="text" id="direccion" placeholder="Dirección" style="width:280px;">
         <input type="text" id="distrito" placeholder="Distrito" style="width:150px;">
       </div>
-
+      
       <div class="form-row">
         <input type="text" id="vendedor" placeholder="Vendedor" style="width:200px;">
         <select id="medioPago" style="width:150px;">
@@ -825,11 +824,11 @@ body.loading button {
           <option>Camión 3</option>
         </select>
       </div>
-
+      
       <div class="form-row">
         <input type="text" id="ubicacion" placeholder="🔗 Link de Google Maps" style="width:100%; max-width:800px;">
       </div>
-
+      
       <div class="form-row">
         <input type="text" id="observaciones" placeholder="Observaciones (texto)" style="width:100%; max-width:400px;">
         <div class="file-upload-wrapper">
@@ -837,13 +836,13 @@ body.loading button {
           <input type="file" id="imgBoleta" accept="image/*" onchange="previsualizarImagen(event)">
         </div>
       </div>
-
+      
       <div id="previewContainer" style="display:none;">
         <img id="previewImg" class="preview-img" src="" alt="Preview">
         <button onclick="limpiarImagen()" style="background:#dc3545; color:white; margin-left:10px; padding:6px 12px; font-size:12px;">❌ Quitar</button>
         <div id="imgInfo" class="img-info"></div>
       </div>
-
+      
       <button class="btn-agregar" onclick="guardarPedido()">💾 Guardar Pedido</button>
     </div>
 
@@ -904,7 +903,10 @@ const USUARIOS = {
   "angela": "angela123",
 };
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwKuke6X364hhEpN7e_txqtkAUYVqduF4I4spGluU0Ewcx3PUZ7YECbP5BAZmuB_ed/exec";
+// ============================================
+// CONFIGURACIÓN - CAMBIA ESTA URL
+// ============================================
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyRNVf8ng-E8WQ69JVMe4aiphg5FfhgFkQo_3QRZ0xF7dMFF4dd_KEjFzdxrNFwnc3E/exec";
 
 let pedidos = [];
 let pedidosFiltrados = [];
@@ -912,17 +914,20 @@ let editandoId = null;
 let usuarioActual = null;
 let imagenBase64 = null;
 
+/* =========================
+   LOGIN / SESIÓN
+========================= */
 function iniciarSesion() {
   const user = document.getElementById("loginUser").value.trim();
   const pass = document.getElementById("loginPass").value;
   const errorDiv = document.getElementById("loginError");
-
+  
   if (!user || !pass) {
     errorDiv.textContent = "Ingresa usuario y contraseña";
     errorDiv.classList.add("show");
     return;
   }
-
+  
   if (USUARIOS[user] && USUARIOS[user] === pass) {
     usuarioActual = user;
     localStorage.setItem("pedidosUser", user);
@@ -999,29 +1004,29 @@ function ocultarLoading() {
 function previsualizarImagen(event) {
   const file = event.target.files[0];
   if (!file) return;
-
+  
   if (!file.type.startsWith('image/')) {
     mostrarToast("❌ Solo se permiten imágenes", "error");
     return;
   }
-
+  
   const infoDiv = document.getElementById("imgInfo");
   if (infoDiv) {
     infoDiv.textContent = `📁 Original: ${(file.size / 1024).toFixed(1)} KB`;
     infoDiv.className = "img-info";
   }
-
+  
   comprimirImagen(file, 800, 600, 0.7).then(compressedBase64 => {
     imagenBase64 = compressedBase64;
     document.getElementById("previewImg").src = imagenBase64;
     document.getElementById("previewContainer").style.display = "block";
-
+    
     const compressedSize = Math.round(imagenBase64.length * 0.75 / 1024);
     if (infoDiv) {
       infoDiv.textContent = `📁 Original: ${(file.size / 1024).toFixed(1)} KB → Comprimida: ~${compressedSize} KB`;
       infoDiv.className = "img-info success";
     }
-
+    
     console.log("✅ Imagen comprimida:", compressedSize, "KB");
   }).catch(err => {
     if (infoDiv) {
@@ -1040,7 +1045,7 @@ function comprimirImagen(file, maxWidth, maxHeight, quality) {
       img.onload = function() {
         let width = img.width;
         let height = img.height;
-
+        
         if (width > maxWidth) {
           height = Math.round(height * maxWidth / width);
           width = maxWidth;
@@ -1049,13 +1054,13 @@ function comprimirImagen(file, maxWidth, maxHeight, quality) {
           width = Math.round(width * maxHeight / height);
           height = maxHeight;
         }
-
+        
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-
+        
         const base64 = canvas.toDataURL('image/jpeg', quality);
         resolve(base64);
       };
@@ -1086,13 +1091,84 @@ function cerrarModalImg() {
 }
 
 /* =========================
-   FETCH - SOLUCIÓN CORS
+   JSONP PARA GET (evita CORS)
+========================= */
+function fetchJSONP(url) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'jsonpCallback_' + Date.now();
+    const script = document.createElement('script');
+    
+    // Timeout por si falla
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('JSONP timeout'));
+    }, 10000);
+    
+    function cleanup() {
+      if (script.parentNode) script.parentNode.removeChild(script);
+      delete window[callbackName];
+      clearTimeout(timeout);
+    }
+    
+    window[callbackName] = function(data) {
+      cleanup();
+      resolve(data);
+    };
+    
+    script.onerror = function() {
+      cleanup();
+      reject(new Error('JSONP failed'));
+    };
+    
+    // Agregar callback como parámetro
+    const separator = url.indexOf('?') >= 0 ? '&' : '?';
+    script.src = url + separator + 'callback=' + callbackName;
+    
+    document.head.appendChild(script);
+  });
+}
+
+/* =========================
+   CARGAR DATOS - JSONP
+========================= */
+async function cargarDesdeSheets() {
+  mostrarLoading("Cargando pedidos...");
+  try {
+    // Usar JSONP para evitar CORS en GET
+    const data = await fetchJSONP(GOOGLE_SCRIPT_URL);
+    
+    console.log("Datos cargados:", data);
+    
+    if (data && data.error) {
+      console.error("Error del servidor:", data.error);
+      mostrarToast("Error: " + data.error, "error");
+      return;
+    }
+
+    pedidos = Array.isArray(data) ? data : [];
+    pedidosFiltrados = [...pedidos];
+
+    renderTabla();
+    actualizarDashboard();
+    cargarDistritos();
+    mostrarToast(`✅ ${pedidos.length} pedidos cargados`, "success");
+
+  } catch (err) {
+    console.error("ERROR GET:", err);
+    mostrarToast("Error al cargar datos: " + err.message, "error");
+  } finally {
+    ocultarLoading();
+  }
+}
+
+/* =========================
+   POST - mode no-cors
 ========================= */
 async function sendToSheets(payload) {
   mostrarLoading("Guardando...");
   try {
-    // SOLUCIÓN CORS: Usar mode no-cors para evitar preflight
-    // Con no-cors no podemos leer la respuesta, pero la petición SÍ se envía
+    // SOLUCIÓN CORS: mode no-cors + text/plain
+    // La petición se envía pero no podemos leer la respuesta
     await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
@@ -1103,7 +1179,7 @@ async function sendToSheets(payload) {
     });
 
     console.log("✅ Petición POST enviada (mode: no-cors)");
-
+    
     // Esperar para que el servidor procese
     await new Promise(r => setTimeout(r, 1500));
     return { ok: true, mensaje: "Guardado correctamente" };
@@ -1117,44 +1193,9 @@ async function sendToSheets(payload) {
   }
 }
 
-async function cargarDesdeSheets() {
-  mostrarLoading("Cargando pedidos...");
-  try {
-    // Para GET usamos un proxy CORS público
-    const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(GOOGLE_SCRIPT_URL);
-    const res = await fetch(proxyUrl);
-    const proxyData = await res.json();
-
-    let data;
-    try {
-      data = JSON.parse(proxyData.contents);
-    } catch {
-      data = proxyData.contents;
-    }
-
-    console.log("Datos cargados:", data);
-
-    if (data && data.error) {
-      console.error("Error del servidor:", data.error);
-      mostrarToast("Error: " + data.error, "error");
-      return;
-    }
-
-    pedidos = Array.isArray(data) ? data : [];
-    pedidosFiltrados = [...pedidos];
-
-    renderTabla();
-    actualizarDashboard();
-    cargarDistritos();
-
-  } catch (err) {
-    console.error("ERROR GET:", err);
-    mostrarToast("Error al cargar datos: " + err.message, "error");
-  } finally {
-    ocultarLoading();
-  }
-}
-
+/* =========================
+   GUARDAR / EDITAR
+========================= */
 async function guardarPedido() {
   const ahora = new Date();
   const fechaLocal = ahora.getFullYear() + "-" + 
@@ -1193,7 +1234,8 @@ async function guardarPedido() {
   }
 
   limpiarFormulario();
-  await cargarDesdeSheets();
+  // Recargar datos después de guardar
+  setTimeout(() => cargarDesdeSheets(), 2000);
 }
 
 function editarPedido(id) {
@@ -1212,7 +1254,7 @@ function editarPedido(id) {
   document.getElementById("camion").value = p.camion || "Camión 1";
   document.getElementById("ubicacion").value = p.ubicacion || "";
   document.getElementById("observaciones").value = p.observaciones || "";
-
+  
   if (p.imgBoleta && p.imgBoleta.trim() !== "" && p.imgBoleta.startsWith("data:image")) {
     imagenBase64 = p.imgBoleta;
     document.getElementById("previewImg").src = imagenBase64;
@@ -1226,7 +1268,7 @@ function editarPedido(id) {
   } else {
     limpiarImagen();
   }
-
+  
   document.querySelector(".formulario").scrollIntoView({ behavior: "smooth" });
   ocultarLoading();
 }
@@ -1235,7 +1277,7 @@ async function eliminarPedido(id) {
   if (!confirm("¿Eliminar pedido?")) return;
   await sendToSheets({ action: "delete", id: id });
   mostrarToast("🗑️ Pedido eliminado", "success");
-  await cargarDesdeSheets();
+  setTimeout(() => cargarDesdeSheets(), 2000);
 }
 
 async function cambiarEstado(id) {
@@ -1246,7 +1288,7 @@ async function cambiarEstado(id) {
   try {
     await sendToSheets({ action: "updateStatus", id: p.id, estado: p.estado });
     mostrarToast("✅ Estado actualizado", "success");
-    await cargarDesdeSheets();
+    setTimeout(() => cargarDesdeSheets(), 2000);
   } catch (err) { ocultarLoading(); }
 }
 
@@ -1258,7 +1300,7 @@ async function toggleEnviarHoy(id) {
   try {
     await sendToSheets({ action: "updateEnviarHoy", id: p.id, enviarHoy: nuevoValor });
     mostrarToast(nuevoValor === "Sí" ? "✅ Marcado para hoy" : "❌ Desmarcado", "success");
-    await cargarDesdeSheets();
+    setTimeout(() => cargarDesdeSheets(), 2000);
   } catch (err) { ocultarLoading(); }
 }
 
@@ -1295,7 +1337,7 @@ function renderRutas() {
   const container = document.getElementById("rutasContainer");
   container.innerHTML = "";
   const camiones = ["Camión 1", "Camión 2", "Camión 3"];
-
+  
   camiones.forEach((camion) => {
     const pedidosCamion = pedidos.filter(p => 
       p.camion === camion && 
@@ -1304,7 +1346,7 @@ function renderRutas() {
       p.ubicacion && 
       p.ubicacion.trim() !== ""
     );
-
+    
     if (pedidosCamion.length === 0) {
       container.innerHTML += `
         <div class="camion-ruta">
@@ -1321,12 +1363,12 @@ function renderRutas() {
       `;
       return;
     }
-
+    
     const listadoUbicacionesHTML = pedidosCamion.map((p, i) => {
       const imgHtml = (p.imgBoleta && p.imgBoleta.trim() !== "" && p.imgBoleta.startsWith("data:image")) 
         ? `<div class="img-boleta"><img src="${p.imgBoleta}" onclick="abrirModalImg('${p.imgBoleta}')" title="Click para ampliar"></div>`
         : '';
-
+      
       return `
         <div class="ubicacion-item">
           <div style="display:flex; align-items:center;">
@@ -1342,7 +1384,7 @@ function renderRutas() {
         </div>
       `;
     }).join('');
-
+    
     const resumenHTML = `
       <div class="resumen-ruta">
         <div class="resumen-titulo">📊 Resumen de la Ruta</div>
@@ -1351,9 +1393,9 @@ function renderRutas() {
         <div class="resumen-dato"><span>Medios de pago:</span><span class="resumen-valor">${[...new Set(pedidosCamion.map(p => p.medioPago).filter(Boolean))].join(', ') || 'N/A'}</span></div>
       </div>
     `;
-
+    
     const wspMensaje = generarMensajeWsp(camion, pedidosCamion);
-
+    
     container.innerHTML += `
       <div class="camion-ruta">
         <div class="camion-header">
@@ -1375,14 +1417,14 @@ function renderRutas() {
 }
 
 function generarMensajeWsp(camion, pedidos) {
-  let msg = `🚚 *RUTA ${camion.toUpperCase()} - ${pedidos.length} ENTREGAS*\n\n`;
+  let msg = `🚚 *RUTA ${camion.toUpperCase()} - ${pedidos.length} ENTREGAS*\\n\\n`;
   pedidos.forEach((p, i) => {
-    msg += `${i + 1}️⃣ *${p.cliente || 'Sin nombre'}*\n`;
-    msg += `🆔 DNI: ${p.dni || 'N/A'}\n`;
-    msg += `📍 ${p.direccion || 'Sin dirección'}${p.distrito ? ', ' + p.distrito : ''}\n`;
-    msg += `📱 ${p.telefono || 'Sin teléfono'}\n`;
-    if (p.observaciones) msg += `📝 ${p.observaciones}\n`;
-    msg += `🔗 ${p.ubicacion || 'Sin link'}\n\n`;
+    msg += `${i + 1}️⃣ *${p.cliente || 'Sin nombre'}*\\n`;
+    msg += `🆔 DNI: ${p.dni || 'N/A'}\\n`;
+    msg += `📍 ${p.direccion || 'Sin dirección'}${p.distrito ? ', ' + p.distrito : ''}\\n`;
+    msg += `📱 ${p.telefono || 'Sin teléfono'}\\n`;
+    if (p.observaciones) msg += `📝 ${p.observaciones}\\n`;
+    msg += `🔗 ${p.ubicacion || 'Sin link'}\\n\\n`;
   });
   msg += `¡Buen viaje! 🚛💨`;
   return msg;
@@ -1393,13 +1435,13 @@ function copiarUbicaciones(camion) {
     p.camion === camion && p.estado === "Pendiente" &&
     p.enviarHoy === "Sí" && p.ubicacion && p.ubicacion.trim() !== ""
   );
-  let texto = `📍 UBICACIONES - ${camion.toUpperCase()}\nTotal: ${pedidosCamion.length} entregas\n\n`;
+  let texto = `📍 UBICACIONES - ${camion.toUpperCase()}\\nTotal: ${pedidosCamion.length} entregas\\n\\n`;
   pedidosCamion.forEach((p, i) => {
-    texto += `${i + 1}. ${p.cliente || 'Sin nombre'}\n`;
-    texto += `   🆔 DNI: ${p.dni || 'N/A'}\n`;
-    texto += `   📍 ${p.direccion || ''}${p.distrito ? ', ' + p.distrito : ''}\n`;
-    texto += `   📱 ${p.telefono || ''}\n`;
-    texto += `   🔗 ${p.ubicacion || ''}\n\n`;
+    texto += `${i + 1}. ${p.cliente || 'Sin nombre'}\\n`;
+    texto += `   🆔 DNI: ${p.dni || 'N/A'}\\n`;
+    texto += `   📍 ${p.direccion || ''}${p.distrito ? ', ' + p.distrito : ''}\\n`;
+    texto += `   📱 ${p.telefono || ''}\\n`;
+    texto += `   🔗 ${p.ubicacion || ''}\\n\\n`;
   });
   navigator.clipboard.writeText(texto).then(() => {
     mostrarToast("✅ Ubicaciones copiadas", "success");
@@ -1471,7 +1513,7 @@ function renderTabla() {
     } else {
       ubicacionHTML = `<span style="color: #999; font-size: 12px;">—</span>`;
     }
-
+    
     let boletaHTML = `<span style="color:#999; font-size:12px;">—</span>`;
     if (p.imgBoleta && p.imgBoleta.trim() !== "" && p.imgBoleta.startsWith("data:image")) {
       boletaHTML = `<img src="${p.imgBoleta}" class="img-miniatura" onclick="abrirModalImg('${p.imgBoleta}')" title="Click para ampliar">`;
@@ -1521,4 +1563,4 @@ function limpiarFormulario() {
 </script>
 
 </body>
-</html>
+</html>'''
