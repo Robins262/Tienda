@@ -239,6 +239,27 @@ button:active { transform: scale(0.97); }
 }
 
 /* =========================
+   CHECKBOX MARCAR HOY
+========================= */
+.chk-marcar-hoy {
+  width: 22px !important;
+  height: 22px !important;
+  cursor: pointer;
+  accent-color: #007bff;
+}
+
+.btn-marcar-hoy {
+  background: linear-gradient(135deg, #fd7e14, #e8590c);
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.btn-marcar-hoy.activo {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+/* =========================
    MAPA DE RUTAS - CON LINKS
 ========================= */
 .rutas-panel {
@@ -386,6 +407,24 @@ button:active { transform: scale(0.97); }
   padding: 4px 8px;
   border-radius: 4px;
   display: inline-block;
+}
+
+.ubicacion-item .img-boleta {
+  margin-top: 8px;
+  margin-left: 38px;
+}
+
+.ubicacion-item .img-boleta img {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.ubicacion-item .img-boleta img:hover {
+  transform: scale(1.05);
 }
 
 .sin-ubicaciones {
@@ -591,6 +630,89 @@ tr:hover { background: #f8f9fa; }
 .dropdown-content a:hover { background-color: #f1f1f1; }
 
 /* =========================
+   SUBIR IMAGEN
+========================= */
+.file-upload-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.file-upload-wrapper input[type="file"] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.btn-subir-img {
+  background: linear-gradient(135deg, #6f42c1, #5a32a3);
+  color: white;
+  padding: 10px 16px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preview-img {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-top: 10px;
+}
+
+.img-miniatura {
+  max-width: 80px;
+  max-height: 60px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.img-miniatura:hover {
+  transform: scale(1.1);
+}
+
+/* Modal imagen */
+.modal-img {
+  display: none;
+  position: fixed;
+  z-index: 20000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-img.active {
+  display: flex;
+}
+
+.modal-img-content {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 12px;
+}
+
+.modal-img-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: white;
+  font-size: 40px;
+  cursor: pointer;
+}
+
+/* =========================
    LOADING OVERLAY
 ========================= */
 #loadingOverlay {
@@ -679,6 +801,7 @@ body.loading button {
   .acciones-ruta-principales a { min-width: 100%; }
 }
 </style>
+<base target="_blank">
 </head>
 
 <body>
@@ -690,12 +813,12 @@ body.loading button {
   <div class="login-box">
     <h1>🔐 Sistema de Pedidos</h1>
     <p>Ingresa tus credenciales para continuar</p>
-    
+
     <input type="text" id="loginUser" placeholder="Usuario" autocomplete="off">
     <input type="password" id="loginPass" placeholder="Contraseña">
-    
+
     <button onclick="iniciarSesion()">Ingresar</button>
-    
+
     <div class="login-error" id="loginError">Usuario o contraseña incorrectos</div>
   </div>
 </div>
@@ -723,6 +846,12 @@ body.loading button {
     <div class="loading-text">Cargando...</div>
   </div>
 
+  <!-- MODAL IMAGEN -->
+  <div class="modal-img" id="modalImg" onclick="cerrarModalImg()">
+    <span class="modal-img-close">&times;</span>
+    <img class="modal-img-content" id="modalImgContent" src="">
+  </div>
+
   <!-- NAV TABS -->
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="cambiarTab('pedidos')">📋 Pedidos</button>
@@ -737,22 +866,24 @@ body.loading button {
       <div class="card"><h3 id="pendientes">0</h3><p>Pendientes</p></div>
       <div class="card"><h3 id="entregados">0</h3><p>Entregados</p></div>
       <div class="card"><h3 id="total">0</h3><p>Total</p></div>
+      <div class="card"><h3 id="paraHoy">0</h3><p>Para Hoy</p></div>
     </div>
 
     <!-- Formulario -->
     <div class="formulario">
       <h2>📝 Nuevo / Editar Pedido</h2>
-      
+
       <div class="form-row">
         <input type="text" id="cliente" placeholder="Cliente" style="width:220px;">
+        <input type="text" id="dni" placeholder="DNI" style="width:120px;">
         <input type="text" id="telefono" placeholder="Teléfono" style="width:180px;">
         <input type="text" id="direccion" placeholder="Dirección" style="width:280px;">
         <input type="text" id="distrito" placeholder="Distrito" style="width:150px;">
       </div>
-      
+
       <div class="form-row">
         <input type="text" id="vendedor" placeholder="Vendedor" style="width:200px;">
-        
+
         <select id="medioPago" style="width:150px;">
           <option>Efectivo</option>
           <option>Yape</option>
@@ -760,22 +891,34 @@ body.loading button {
           <option>Transferencia</option>
           <option>Tarjeta</option>
         </select>
-        
+
         <select id="camion" style="width:150px;">
           <option>Camión 1</option>
           <option>Camión 2</option>
           <option>Camión 3</option>
         </select>
       </div>
-      
+
       <div class="form-row">
         <input type="text" id="ubicacion" placeholder="🔗 Link de Google Maps (ej: https://www.google.com/maps/place/.../@-12.02725,-76.972234,...)" style="width:100%; max-width:800px;">
       </div>
-      
+
       <div class="form-row">
-        <input type="text" id="observaciones" placeholder="Observaciones" style="width:100%; max-width:600px;">
+        <input type="text" id="observaciones" placeholder="Observaciones (texto)" style="width:100%; max-width:400px;">
+
+        <!-- Subir imagen de boleta -->
+        <div class="file-upload-wrapper">
+          <button class="btn-subir-img">📷 Subir Boleta</button>
+          <input type="file" id="imgBoleta" accept="image/*" onchange="previsualizarImagen(event)">
+        </div>
       </div>
-      
+
+      <!-- Preview de imagen -->
+      <div id="previewContainer" style="display:none;">
+        <img id="previewImg" class="preview-img" src="" alt="Preview">
+        <button onclick="limpiarImagen()" style="background:#dc3545; color:white; margin-left:10px; padding:6px 12px; font-size:12px;">❌ Quitar</button>
+      </div>
+
       <button class="btn-agregar" onclick="guardarPedido()">💾 Guardar Pedido</button>
     </div>
 
@@ -784,16 +927,16 @@ body.loading button {
       <select id="filtroDistrito">
         <option value="">Todos los distritos</option>
       </select>
-      
+
       <input type="date" id="filtroFecha">
-      
+
       <select id="filtroCamion">
         <option value="">Todos los camiones</option>
         <option>Camión 1</option>
         <option>Camión 2</option>
         <option>Camión 3</option>
       </select>
-      
+
       <button onclick="aplicarFiltros()">🔍 Filtrar</button>
       <button onclick="limpiarFiltros()">🧹 Limpiar</button>
     </div>
@@ -804,6 +947,7 @@ body.loading button {
         <tr>
           <th>ID</th>
           <th>Cliente</th>
+          <th>DNI</th>
           <th>Teléfono</th>
           <th>Dirección</th>
           <th>Distrito</th>
@@ -814,6 +958,8 @@ body.loading button {
           <th>Estado</th>
           <th>Ubicación</th>
           <th>Observaciones</th>
+          <th>Boleta</th>
+          <th>Enviar Hoy</th>
           <th>Acción</th>
         </tr>
       </thead>
@@ -827,8 +973,8 @@ body.loading button {
 
     <div class="rutas-panel">
       <h2>🚛 Rutas de Entrega por Camión</h2>
-      <p style="color:#666; margin-bottom:20px;">Cada camión muestra su mapa y un listado con los links directos de Google Maps de cada pedido pendiente.</p>
-      
+      <p style="color:#666; margin-bottom:20px;">Cada camión muestra su mapa y un listado con los links directos de Google Maps de cada pedido marcado para hoy.</p>
+
       <div id="rutasContainer">
         <!-- Se genera dinámicamente -->
       </div>
@@ -856,6 +1002,7 @@ let pedidos = [];
 let pedidosFiltrados = [];
 let editandoId = null;
 let usuarioActual = null;
+let imagenBase64 = null; // Imagen de boleta en base64
 
 /* =========================
    LOGIN / SESIÓN
@@ -864,21 +1011,21 @@ function iniciarSesion() {
   const user = document.getElementById("loginUser").value.trim();
   const pass = document.getElementById("loginPass").value;
   const errorDiv = document.getElementById("loginError");
-  
+
   if (!user || !pass) {
     errorDiv.textContent = "Ingresa usuario y contraseña";
     errorDiv.classList.add("show");
     return;
   }
-  
+
   if (USUARIOS[user] && USUARIOS[user] === pass) {
     usuarioActual = user;
     localStorage.setItem("pedidosUser", user);
-    
+
     document.getElementById("nombreUsuario").textContent = user;
     document.getElementById("loginPanel").style.display = "none";
     document.getElementById("appContent").style.display = "block";
-    
+
     cargarDesdeSheets();
   } else {
     errorDiv.textContent = "Usuario o contraseña incorrectos";
@@ -890,11 +1037,11 @@ function iniciarSesion() {
 function cerrarSesion() {
   usuarioActual = null;
   localStorage.removeItem("pedidosUser");
-  
+
   document.getElementById("loginUser").value = "";
   document.getElementById("loginPass").value = "";
   document.getElementById("loginError").classList.remove("show");
-  
+
   document.getElementById("appContent").style.display = "none";
   document.getElementById("loginPanel").style.display = "flex";
 }
@@ -923,10 +1070,10 @@ document.getElementById("loginUser").addEventListener("keypress", function(e) {
 function cambiarTab(tabName) {
   document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-  
+
   event.target.classList.add("active");
   document.getElementById("tab-" + tabName).classList.add("active");
-  
+
   if (tabName === "rutas") {
     renderRutas();
   }
@@ -941,7 +1088,7 @@ function mostrarToast(mensaje, tipo = "info") {
   toast.className = `toast ${tipo}`;
   toast.textContent = mensaje;
   container.appendChild(toast);
-  
+
   setTimeout(() => {
     toast.remove();
   }, 3000);
@@ -959,6 +1106,48 @@ function mostrarLoading(mensaje = "Cargando...") {
 function ocultarLoading() {
   document.getElementById("loadingOverlay").classList.remove("active");
   document.body.classList.remove("loading");
+}
+
+/* =========================
+   IMAGEN - PREVIEW Y BASE64
+========================= */
+function previsualizarImagen(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    mostrarToast("❌ Solo se permiten imágenes", "error");
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    mostrarToast("❌ La imagen debe ser menor a 2MB", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    imagenBase64 = e.target.result;
+    document.getElementById("previewImg").src = imagenBase64;
+    document.getElementById("previewContainer").style.display = "block";
+  };
+  reader.readAsDataURL(file);
+}
+
+function limpiarImagen() {
+  imagenBase64 = null;
+  document.getElementById("imgBoleta").value = "";
+  document.getElementById("previewImg").src = "";
+  document.getElementById("previewContainer").style.display = "none";
+}
+
+function abrirModalImg(src) {
+  document.getElementById("modalImgContent").src = src;
+  document.getElementById("modalImg").classList.add("active");
+}
+
+function cerrarModalImg() {
+  document.getElementById("modalImg").classList.remove("active");
 }
 
 /* =========================
@@ -1035,6 +1224,7 @@ async function guardarPedido() {
   const data = {
     id: editandoId || Date.now(),
     cliente: document.getElementById("cliente").value,
+    dni: document.getElementById("dni").value,
     telefono: document.getElementById("telefono").value,
     direccion: document.getElementById("direccion").value,
     distrito: document.getElementById("distrito").value,
@@ -1043,8 +1233,10 @@ async function guardarPedido() {
     camion: document.getElementById("camion").value,
     ubicacion: ubicacionUrl,
     observaciones: document.getElementById("observaciones").value,
+    imgBoleta: imagenBase64 || "",
     fecha: fechaLocal,
-    estado: "Pendiente"
+    estado: "Pendiente",
+    enviarHoy: "No"
   };
 
   if (editandoId) {
@@ -1065,7 +1257,7 @@ async function guardarPedido() {
 ========================= */
 function editarPedido(id) {
   mostrarLoading("Cargando...");
-  
+
   const p = pedidos.find(x => String(x.id) === String(id));
   if (!p) {
     ocultarLoading();
@@ -1075,6 +1267,7 @@ function editarPedido(id) {
   editandoId = id;
 
   document.getElementById("cliente").value = p.cliente || "";
+  document.getElementById("dni").value = p.dni || "";
   document.getElementById("telefono").value = p.telefono || "";
   document.getElementById("direccion").value = p.direccion || "";
   document.getElementById("distrito").value = p.distrito || "";
@@ -1083,9 +1276,18 @@ function editarPedido(id) {
   document.getElementById("camion").value = p.camion || "Camión 1";
   document.getElementById("ubicacion").value = p.ubicacion || "";
   document.getElementById("observaciones").value = p.observaciones || "";
-  
+
+  // Cargar imagen si existe
+  if (p.imgBoleta && p.imgBoleta.trim() !== "") {
+    imagenBase64 = p.imgBoleta;
+    document.getElementById("previewImg").src = imagenBase64;
+    document.getElementById("previewContainer").style.display = "block";
+  } else {
+    limpiarImagen();
+  }
+
   document.querySelector(".formulario").scrollIntoView({ behavior: "smooth" });
-  
+
   ocultarLoading();
 }
 
@@ -1105,7 +1307,7 @@ async function eliminarPedido(id) {
 ========================= */
 async function cambiarEstado(id) {
   mostrarLoading("Actualizando...");
-  
+
   const p = pedidos.find(x => String(x.id) === String(id));
   if (!p) {
     ocultarLoading();
@@ -1128,11 +1330,38 @@ async function cambiarEstado(id) {
 }
 
 /* =========================
+   MARCAR ENVIAR HOY
+========================= */
+async function toggleEnviarHoy(id) {
+  mostrarLoading("Actualizando...");
+
+  const p = pedidos.find(x => String(x.id) === String(id));
+  if (!p) {
+    ocultarLoading();
+    return;
+  }
+
+  const nuevoValor = p.enviarHoy === "Sí" ? "No" : "Sí";
+
+  try {
+    await sendToSheets({
+      action: "updateEnviarHoy",
+      id: p.id,
+      enviarHoy: nuevoValor
+    });
+    mostrarToast(nuevoValor === "Sí" ? "✅ Marcado para hoy" : "❌ Desmarcado", "success");
+    await cargarDesdeSheets();
+  } catch (err) {
+    ocultarLoading();
+  }
+}
+
+/* =========================
    FILTROS
 ========================= */
 function aplicarFiltros() {
   mostrarLoading("Filtrando...");
-  
+
   const d = document.getElementById("filtroDistrito").value;
   const f = document.getElementById("filtroFecha").value;
   const c = document.getElementById("filtroCamion").value;
@@ -1145,7 +1374,7 @@ function aplicarFiltros() {
   });
 
   renderTabla();
-  
+
   setTimeout(() => {
     ocultarLoading();
     mostrarToast(`🔍 ${pedidosFiltrados.length} pedidos encontrados`, "info");
@@ -1162,41 +1391,47 @@ function limpiarFiltros() {
 }
 
 /* ============================================================
-   RUTAS / MAPAS - CON LINKS DIRECTOS DE GOOGLE MAPS
+   RUTAS / MAPAS - SOLO PEDIDOS MARCADOS "ENVIAR HOY"
    ============================================================ */
 function renderRutas() {
   const container = document.getElementById("rutasContainer");
   container.innerHTML = "";
-  
+
   const camiones = ["Camión 1", "Camión 2", "Camión 3"];
-  
+
   camiones.forEach((camion) => {
-    // Solo pedidos pendientes CON ubicación (cualquier link de Google Maps)
+    // Solo pedidos marcados "Sí" en enviarHoy, pendientes, CON ubicación
     const pedidosCamion = pedidos.filter(p => 
       p.camion === camion && 
       p.estado === "Pendiente" &&
+      p.enviarHoy === "Sí" &&
       p.ubicacion && 
       p.ubicacion.trim() !== ""
     );
-    
+
     if (pedidosCamion.length === 0) {
       container.innerHTML += `
         <div class="camion-ruta">
           <div class="camion-header">
             <h3>🚚 ${camion}</h3>
-            <span class="badge">0 entregas</span>
+            <span class="badge">0 para hoy</span>
           </div>
           <div style="padding:30px; text-align:center; color:#999;">
             <div style="font-size:48px; margin-bottom:10px;">📭</div>
-            <p>No hay pedidos pendientes con ubicación para este camión</p>
+            <p>No hay pedidos marcados para hoy con ubicación</p>
+            <p style="font-size:12px; margin-top:10px;">Marca pedidos en la tabla con "Enviar Hoy"</p>
           </div>
         </div>
       `;
       return;
     }
-    
+
     // Generar el listado de ubicaciones con links directos
     const listadoUbicacionesHTML = pedidosCamion.map((p, i) => {
+      const imgHtml = (p.imgBoleta && p.imgBoleta.trim() !== "") 
+        ? `<div class="img-boleta"><img src="${p.imgBoleta}" onclick="abrirModalImg('${p.imgBoleta}')" title="Click para ampliar"></div>`
+        : '';
+
       return `
         <div class="ubicacion-item">
           <div style="display:flex; align-items:center;">
@@ -1209,14 +1444,16 @@ function renderRutas() {
           <div class="telefono-texto">
             📱 ${p.telefono || 'Sin teléfono'}
           </div>
+          ${p.dni ? `<div class="telefono-texto">🆔 DNI: ${p.dni}</div>` : ''}
           ${p.observaciones ? `<div class="observaciones-texto">📝 ${p.observaciones}</div>` : ''}
+          ${imgHtml}
           <a class="link-maps" href="${p.ubicacion}" target="_blank" rel="noopener noreferrer">
             🗺️ Abrir en Google Maps
           </a>
         </div>
       `;
     }).join('');
-    
+
     // Resumen de la ruta
     const resumenHTML = `
       <div class="resumen-ruta">
@@ -1235,26 +1472,26 @@ function renderRutas() {
         </div>
       </div>
     `;
-    
+
     // Generar mensaje de WhatsApp con todos los links
     const wspMensaje = generarMensajeWsp(camion, pedidosCamion);
-    
+
     container.innerHTML += `
       <div class="camion-ruta">
         <div class="camion-header">
           <h3>🚚 ${camion}</h3>
-          <span class="badge">${pedidosCamion.length} entregas pendientes</span>
+          <span class="badge">${pedidosCamion.length} entregas para hoy</span>
         </div>
-        
+
         <div class="ubicaciones-panel">
           <h4>📍 Listado de Ubicaciones (${pedidosCamion.length})</h4>
-          
+
           ${resumenHTML}
-          
+
           <div style="margin-top:10px;">
             ${listadoUbicacionesHTML}
           </div>
-          
+
           <!-- Acciones principales de la ruta -->
           <div class="acciones-ruta-principales">
             <a class="btn-wsp-conductor" href="https://wa.me/?text=${encodeURIComponent(wspMensaje)}" target="_blank" rel="noopener noreferrer">
@@ -1271,19 +1508,20 @@ function renderRutas() {
 }
 
 function generarMensajeWsp(camion, pedidos) {
-  let msg = `🚚 *RUTA ${camion.toUpperCase()} - ${pedidos.length} ENTREGAS*\\n\\n`;
-  
+  let msg = `🚚 *RUTA ${camion.toUpperCase()} - ${pedidos.length} ENTREGAS*\n\n`;
+
   pedidos.forEach((p, i) => {
-    msg += `${i + 1}️⃣ *${p.cliente || 'Sin nombre'}*\\n`;
-    msg += `📍 ${p.direccion || 'Sin dirección'}${p.distrito ? ', ' + p.distrito : ''}\\n`;
-    msg += `📱 ${p.telefono || 'Sin teléfono'}\\n`;
-    if (p.observaciones) msg += `📝 ${p.observaciones}\\n`;
-    msg += `🔗 ${p.ubicacion || 'Sin link'}\\n`;
-    msg += `\\n`;
+    msg += `${i + 1}️⃣ *${p.cliente || 'Sin nombre'}*\n`;
+    msg += `🆔 DNI: ${p.dni || 'N/A'}\n`;
+    msg += `📍 ${p.direccion || 'Sin dirección'}${p.distrito ? ', ' + p.distrito : ''}\n`;
+    msg += `📱 ${p.telefono || 'Sin teléfono'}\n`;
+    if (p.observaciones) msg += `📝 ${p.observaciones}\n`;
+    msg += `🔗 ${p.ubicacion || 'Sin link'}\n`;
+    msg += `\n`;
   });
-  
+
   msg += `¡Buen viaje! 🚛💨`;
-  
+
   return msg;
 }
 
@@ -1291,20 +1529,22 @@ function copiarUbicaciones(camion) {
   const pedidosCamion = pedidos.filter(p => 
     p.camion === camion && 
     p.estado === "Pendiente" &&
+    p.enviarHoy === "Sí" &&
     p.ubicacion && 
     p.ubicacion.trim() !== ""
   );
-  
-  let texto = `📍 UBICACIONES - ${camion.toUpperCase()}\\n`;
-  texto += `Total: ${pedidosCamion.length} entregas\\n\\n`;
-  
+
+  let texto = `📍 UBICACIONES - ${camion.toUpperCase()}\n`;
+  texto += `Total: ${pedidosCamion.length} entregas\n\n`;
+
   pedidosCamion.forEach((p, i) => {
-    texto += `${i + 1}. ${p.cliente || 'Sin nombre'}\\n`;
-    texto += `   📍 ${p.direccion || ''}${p.distrito ? ', ' + p.distrito : ''}\\n`;
-    texto += `   📱 ${p.telefono || ''}\\n`;
-    texto += `   🔗 ${p.ubicacion || ''}\\n\\n`;
+    texto += `${i + 1}. ${p.cliente || 'Sin nombre'}\n`;
+    texto += `   🆔 DNI: ${p.dni || 'N/A'}\n`;
+    texto += `   📍 ${p.direccion || ''}${p.distrito ? ', ' + p.distrito : ''}\n`;
+    texto += `   📱 ${p.telefono || ''}\n`;
+    texto += `   🔗 ${p.ubicacion || ''}\n\n`;
   });
-  
+
   navigator.clipboard.writeText(texto).then(() => {
     mostrarToast("✅ Ubicaciones copiadas al portapapeles", "success");
   }).catch(() => {
@@ -1321,7 +1561,7 @@ function toggleDropdown(id) {
       d.classList.remove("show");
     }
   });
-  
+
   const dropdown = document.getElementById("dropdown-" + id);
   dropdown.classList.toggle("show");
 }
@@ -1343,6 +1583,9 @@ function actualizarDashboard() {
     pedidos.filter(p => p.estado === "Entregado").length;
 
   document.getElementById("total").innerText = pedidos.length;
+
+  document.getElementById("paraHoy").innerText =
+    pedidos.filter(p => p.enviarHoy === "Sí" && p.estado === "Pendiente").length;
 }
 
 function cargarDistritos() {
@@ -1383,6 +1626,7 @@ function renderTabla() {
     }
 
     const tieneUbicacion = p.ubicacion && p.ubicacion.trim() !== "";
+    const enviarHoyActivo = p.enviarHoy === "Sí";
 
     let ubicacionHTML = "";
     if (tieneUbicacion) {
@@ -1404,10 +1648,17 @@ function renderTabla() {
       ubicacionHTML = `<span style="color: #999; font-size: 12px;">—</span>`;
     }
 
+    // Imagen de boleta miniatura
+    let boletaHTML = `<span style="color:#999; font-size:12px;">—</span>`;
+    if (p.imgBoleta && p.imgBoleta.trim() !== "") {
+      boletaHTML = `<img src="${p.imgBoleta}" class="img-miniatura" onclick="abrirModalImg('${p.imgBoleta}')" title="Click para ampliar">`;
+    }
+
     tabla.innerHTML += `
       <tr>
         <td>${p.id}</td>
         <td>${p.cliente || ''}</td>
+        <td>${p.dni || ''}</td>
         <td>${p.telefono || ''}</td>
         <td>${p.direccion || ''}</td>
         <td>${p.distrito || ''}</td>
@@ -1422,6 +1673,12 @@ function renderTabla() {
         </td>
         <td>${ubicacionHTML}</td>
         <td>${p.observaciones || ''}</td>
+        <td>${boletaHTML}</td>
+        <td>
+          <button class="btn-marcar-hoy ${enviarHoyActivo ? 'activo' : ''}" onclick="toggleEnviarHoy('${p.id}')" title="Marcar para enviar hoy">
+            ${enviarHoyActivo ? '✅ Hoy' : '📌 Marcar'}
+          </button>
+        </td>
         <td>
           <button class="btn-check" onclick="cambiarEstado('${p.id}')" title="Cambiar estado">✓</button>
           <button class="btn-edit" onclick="editarPedido('${p.id}')" title="Editar">✏️</button>
@@ -1437,6 +1694,7 @@ function renderTabla() {
 ========================= */
 function limpiarFormulario() {
   document.getElementById("cliente").value = "";
+  document.getElementById("dni").value = "";
   document.getElementById("telefono").value = "";
   document.getElementById("direccion").value = "";
   document.getElementById("distrito").value = "";
@@ -1445,6 +1703,7 @@ function limpiarFormulario() {
   document.getElementById("camion").selectedIndex = 0;
   document.getElementById("ubicacion").value = "";
   document.getElementById("observaciones").value = "";
+  limpiarImagen();
   editandoId = null;
 }
 
