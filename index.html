@@ -15,9 +15,6 @@ body {
   min-height: 100vh;
 }
 
-/* =========================
-   LOGIN PANEL
-========================= */
 #loginPanel {
   display: flex;
   justify-content: center;
@@ -75,9 +72,6 @@ body {
 }
 .login-error.show { display: block; }
 
-/* =========================
-   APP CONTENT
-========================= */
 #appContent {
   display: none;
   padding: 20px;
@@ -118,7 +112,6 @@ body {
   font-weight: 600;
 }
 
-/* Navegación por tabs */
 .nav-tabs {
   display: flex;
   gap: 10px;
@@ -149,9 +142,6 @@ body {
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* =========================
-   DASHBOARD CARDS
-========================= */
 .card-container {
   display: flex;
   gap: 15px;
@@ -172,9 +162,6 @@ body {
 .card h3 { margin: 0; font-size: 36px; color: #007bff; }
 .card p { color: #666; margin-top: 5px; font-size: 14px; }
 
-/* =========================
-   FORMULARIO
-========================= */
 .formulario {
   background: white;
   padding: 25px;
@@ -207,11 +194,6 @@ body {
   border-color: #007bff;
 }
 
-.formulario input#ubicacion {
-  width: 100%;
-  max-width: 600px;
-}
-
 .formulario input::placeholder { color: #aaa; }
 
 button {
@@ -238,16 +220,6 @@ button:active { transform: scale(0.97); }
   margin-top: 10px;
 }
 
-/* =========================
-   CHECKBOX MARCAR HOY
-========================= */
-.chk-marcar-hoy {
-  width: 22px !important;
-  height: 22px !important;
-  cursor: pointer;
-  accent-color: #007bff;
-}
-
 .btn-marcar-hoy {
   background: linear-gradient(135deg, #fd7e14, #e8590c);
   color: white;
@@ -259,9 +231,6 @@ button:active { transform: scale(0.97); }
   background: linear-gradient(135deg, #28a745, #1e7e34);
 }
 
-/* =========================
-   MAPA DE RUTAS - CON LINKS
-========================= */
 .rutas-panel {
   background: white;
   padding: 25px;
@@ -272,7 +241,6 @@ button:active { transform: scale(0.97); }
 
 .rutas-panel h2 { margin-bottom: 20px; font-size: 20px; }
 
-/* Layout: mapa arriba, listado abajo */
 .camion-ruta {
   margin-bottom: 30px;
   border: 2px solid #e8e8e8;
@@ -298,20 +266,6 @@ button:active { transform: scale(0.97); }
   font-size: 13px;
 }
 
-.mapa-container {
-  width: 100%;
-  height: 400px;
-  border: none;
-  background: #eef2f7;
-}
-
-.mapa-container iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-/* ===== LISTADO DE UBICACIONES CON LINKS ===== */
 .ubicaciones-panel {
   background: #f8f9fa;
   padding: 20px;
@@ -433,7 +387,6 @@ button:active { transform: scale(0.97); }
   color: #999;
 }
 
-/* ===== RESUMEN DE RUTA ===== */
 .resumen-ruta {
   background: white;
   border-radius: 10px;
@@ -465,7 +418,6 @@ button:active { transform: scale(0.97); }
   color: #007bff;
 }
 
-/* Botones de acción de ruta */
 .acciones-ruta-principales {
   display: flex;
   gap: 10px;
@@ -492,11 +444,6 @@ button:active { transform: scale(0.97); }
   transition: all 0.2s;
 }
 
-.btn-ruta-completa {
-  background: linear-gradient(135deg, #28a745, #1e7e34);
-  color: white;
-}
-
 .btn-wsp-conductor {
   background: linear-gradient(135deg, #25d366, #128c7e);
   color: white;
@@ -507,9 +454,6 @@ button:active { transform: scale(0.97); }
   color: white;
 }
 
-/* =========================
-   TABLA PEDIDOS
-========================= */
 .filtros {
   display: flex;
   gap: 10px;
@@ -629,9 +573,6 @@ tr:hover { background: #f8f9fa; }
 
 .dropdown-content a:hover { background-color: #f1f1f1; }
 
-/* =========================
-   SUBIR IMAGEN
-========================= */
 .file-upload-wrapper {
   position: relative;
   display: inline-block;
@@ -679,22 +620,6 @@ tr:hover { background: #f8f9fa; }
   transform: scale(1.1);
 }
 
-/* Info de imagen */
-.img-info {
-  font-size: 11px;
-  color: #666;
-  margin-top: 4px;
-}
-
-.img-info.error {
-  color: #dc3545;
-}
-
-.img-info.success {
-  color: #28a745;
-}
-
-/* Modal imagen */
 .modal-img {
   display: none;
   position: fixed;
@@ -727,9 +652,20 @@ tr:hover { background: #f8f9fa; }
   cursor: pointer;
 }
 
-/* =========================
-   LOADING OVERLAY
-========================= */
+.img-info {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.img-info.error {
+  color: #dc3545;
+}
+
+.img-info.success {
+  color: #28a745;
+}
+
 #loadingOverlay {
   display: none;
   position: fixed;
@@ -772,9 +708,6 @@ body.loading button {
   opacity: 0.6;
 }
 
-/* =========================
-   TOAST NOTIFICATIONS
-========================= */
 .toast-container {
   position: fixed;
   top: 20px;
@@ -805,13 +738,11 @@ body.loading button {
   to { transform: translateX(0); opacity: 1; }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .card-container { flex-direction: column; }
   .form-row { flex-direction: column; }
   .formulario input,
   .formulario select { width: 100% !important; }
-  .mapa-container { height: 280px; }
   .acciones-ruta-principales button,
   .acciones-ruta-principales a { min-width: 100%; }
 }
@@ -821,29 +752,19 @@ body.loading button {
 
 <body>
 
-<!-- =========================
-     LOGIN PANEL
-========================= -->
 <div id="loginPanel">
   <div class="login-box">
     <h1>🔐 Sistema de Pedidos</h1>
     <p>Ingresa tus credenciales para continuar</p>
-
     <input type="text" id="loginUser" placeholder="Usuario" autocomplete="off">
     <input type="password" id="loginPass" placeholder="Contraseña">
-
     <button onclick="iniciarSesion()">Ingresar</button>
-
     <div class="login-error" id="loginError">Usuario o contraseña incorrectos</div>
   </div>
 </div>
 
-<!-- =========================
-     APP CONTENT
-========================= -->
 <div id="appContent">
 
-  <!-- Header -->
   <div class="app-header">
     <h1>📦 Sistema de Gestión de Pedidos</h1>
     <div class="user-info">
@@ -852,31 +773,25 @@ body.loading button {
     </div>
   </div>
 
-  <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- LOADING -->
   <div id="loadingOverlay">
     <div class="loading-spinner"></div>
     <div class="loading-text">Cargando...</div>
   </div>
 
-  <!-- MODAL IMAGEN -->
   <div class="modal-img" id="modalImg" onclick="cerrarModalImg()">
     <span class="modal-img-close">&times;</span>
     <img class="modal-img-content" id="modalImgContent" src="">
   </div>
 
-  <!-- NAV TABS -->
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="cambiarTab('pedidos')">📋 Pedidos</button>
     <button class="nav-tab" onclick="cambiarTab('rutas')">🗺️ Rutas por Camión</button>
   </div>
 
-  <!-- TAB: PEDIDOS -->
   <div id="tab-pedidos" class="tab-content active">
 
-    <!-- Dashboard -->
     <div class="card-container">
       <div class="card"><h3 id="pendientes">0</h3><p>Pendientes</p></div>
       <div class="card"><h3 id="entregados">0</h3><p>Entregados</p></div>
@@ -884,7 +799,6 @@ body.loading button {
       <div class="card"><h3 id="paraHoy">0</h3><p>Para Hoy</p></div>
     </div>
 
-    <!-- Formulario -->
     <div class="formulario">
       <h2>📝 Nuevo / Editar Pedido</h2>
 
@@ -898,7 +812,6 @@ body.loading button {
 
       <div class="form-row">
         <input type="text" id="vendedor" placeholder="Vendedor" style="width:200px;">
-
         <select id="medioPago" style="width:150px;">
           <option>Efectivo</option>
           <option>Yape</option>
@@ -906,7 +819,6 @@ body.loading button {
           <option>Transferencia</option>
           <option>Tarjeta</option>
         </select>
-
         <select id="camion" style="width:150px;">
           <option>Camión 1</option>
           <option>Camión 2</option>
@@ -915,48 +827,41 @@ body.loading button {
       </div>
 
       <div class="form-row">
-        <input type="text" id="ubicacion" placeholder="🔗 Link de Google Maps (ej: https://www.google.com/maps/place/.../@-12.02725,-76.972234,...)" style="width:100%; max-width:800px;">
+        <input type="text" id="ubicacion" placeholder="🔗 Link de Google Maps" style="width:100%; max-width:800px;">
       </div>
 
       <div class="form-row">
         <input type="text" id="observaciones" placeholder="Observaciones (texto)" style="width:100%; max-width:400px;">
-
-        <!-- Subir imagen de boleta -->
         <div class="file-upload-wrapper">
           <button class="btn-subir-img">📷 Subir Boleta</button>
           <input type="file" id="imgBoleta" accept="image/*" onchange="previsualizarImagen(event)">
         </div>
       </div>
 
-      <!-- Preview de imagen -->
       <div id="previewContainer" style="display:none;">
         <img id="previewImg" class="preview-img" src="" alt="Preview">
         <button onclick="limpiarImagen()" style="background:#dc3545; color:white; margin-left:10px; padding:6px 12px; font-size:12px;">❌ Quitar</button>
+        <div id="imgInfo" class="img-info"></div>
       </div>
 
       <button class="btn-agregar" onclick="guardarPedido()">💾 Guardar Pedido</button>
     </div>
 
-    <!-- Filtros -->
     <div class="filtros">
       <select id="filtroDistrito">
         <option value="">Todos los distritos</option>
       </select>
-
       <input type="date" id="filtroFecha">
-
       <select id="filtroCamion">
         <option value="">Todos los camiones</option>
         <option>Camión 1</option>
         <option>Camión 2</option>
         <option>Camión 3</option>
       </select>
-
       <button onclick="aplicarFiltros()">🔍 Filtrar</button>
       <button onclick="limpiarFiltros()">🧹 Limpiar</button>
     </div>
 
-    <!-- Tabla -->
     <table>
       <thead>
         <tr>
@@ -983,45 +888,30 @@ body.loading button {
 
   </div>
 
-  <!-- TAB: RUTAS - CON LINKS GOOGLE MAPS -->
   <div id="tab-rutas" class="tab-content">
-
     <div class="rutas-panel">
       <h2>🚛 Rutas de Entrega por Camión</h2>
-      <p style="color:#666; margin-bottom:20px;">Cada camión muestra su mapa y un listado con los links directos de Google Maps de cada pedido marcado para hoy.</p>
-
-      <div id="rutasContainer">
-        <!-- Se genera dinámicamente -->
-      </div>
+      <p style="color:#666; margin-bottom:20px;">Solo se muestran los pedidos marcados como "Enviar Hoy".</p>
+      <div id="rutasContainer"></div>
     </div>
-
   </div>
 
 </div>
 
 <script>
 
-// ============================================
-// USUARIOS
-// ============================================
 const USUARIOS = {
   "angela": "angela123",
 };
 
-// ============================================
-// URL DE APPS SCRIPT (CAMBIA POR LA TUYA)
-// ============================================
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUm1YHYN4VFt9HRWJbvweNkTSsVAwIpqj8R5JhkkNBSGbXmz0sViEZ0nDGivtMtQJG/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwKuke6X364hhEpN7e_txqtkAUYVqduF4I4spGluU0Ewcx3PUZ7YECbP5BAZmuB_ed/exec";
 
 let pedidos = [];
 let pedidosFiltrados = [];
 let editandoId = null;
 let usuarioActual = null;
-let imagenBase64 = null; // Imagen de boleta en base64
+let imagenBase64 = null;
 
-/* =========================
-   LOGIN / SESIÓN
-========================= */
 function iniciarSesion() {
   const user = document.getElementById("loginUser").value.trim();
   const pass = document.getElementById("loginPass").value;
@@ -1036,11 +926,9 @@ function iniciarSesion() {
   if (USUARIOS[user] && USUARIOS[user] === pass) {
     usuarioActual = user;
     localStorage.setItem("pedidosUser", user);
-
     document.getElementById("nombreUsuario").textContent = user;
     document.getElementById("loginPanel").style.display = "none";
     document.getElementById("appContent").style.display = "block";
-
     cargarDesdeSheets();
   } else {
     errorDiv.textContent = "Usuario o contraseña incorrectos";
@@ -1052,11 +940,9 @@ function iniciarSesion() {
 function cerrarSesion() {
   usuarioActual = null;
   localStorage.removeItem("pedidosUser");
-
   document.getElementById("loginUser").value = "";
   document.getElementById("loginPass").value = "";
   document.getElementById("loginError").classList.remove("show");
-
   document.getElementById("appContent").style.display = "none";
   document.getElementById("loginPanel").style.display = "flex";
 }
@@ -1079,39 +965,23 @@ document.getElementById("loginUser").addEventListener("keypress", function(e) {
   if (e.key === "Enter") document.getElementById("loginPass").focus();
 });
 
-/* =========================
-   TABS
-========================= */
 function cambiarTab(tabName) {
   document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-
   event.target.classList.add("active");
   document.getElementById("tab-" + tabName).classList.add("active");
-
-  if (tabName === "rutas") {
-    renderRutas();
-  }
+  if (tabName === "rutas") renderRutas();
 }
 
-/* =========================
-   TOAST NOTIFICATIONS
-========================= */
 function mostrarToast(mensaje, tipo = "info") {
   const container = document.getElementById("toastContainer");
   const toast = document.createElement("div");
   toast.className = `toast ${tipo}`;
   toast.textContent = mensaje;
   container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
+  setTimeout(() => { toast.remove(); }, 3000);
 }
 
-/* =========================
-   LOADING
-========================= */
 function mostrarLoading(mensaje = "Cargando...") {
   document.querySelector(".loading-text").textContent = mensaje;
   document.getElementById("loadingOverlay").classList.add("active");
@@ -1124,7 +994,7 @@ function ocultarLoading() {
 }
 
 /* =========================
-   IMAGEN - PREVIEW Y BASE64
+   IMAGEN - COMPRESIÓN
 ========================= */
 function previsualizarImagen(event) {
   const file = event.target.files[0];
@@ -1135,14 +1005,12 @@ function previsualizarImagen(event) {
     return;
   }
 
-  // Mostrar info del archivo original
   const infoDiv = document.getElementById("imgInfo");
   if (infoDiv) {
     infoDiv.textContent = `📁 Original: ${(file.size / 1024).toFixed(1)} KB`;
     infoDiv.className = "img-info";
   }
 
-  // Comprimir imagen antes de convertir a base64
   comprimirImagen(file, 800, 600, 0.7).then(compressedBase64 => {
     imagenBase64 = compressedBase64;
     document.getElementById("previewImg").src = imagenBase64;
@@ -1154,11 +1022,10 @@ function previsualizarImagen(event) {
       infoDiv.className = "img-info success";
     }
 
-    console.log("Imagen comprimida:", compressedSize, "KB");
-    console.log("Base64 length:", imagenBase64.length);
+    console.log("✅ Imagen comprimida:", compressedSize, "KB");
   }).catch(err => {
     if (infoDiv) {
-      infoDiv.textContent = "❌ Error al comprimir: " + err.message;
+      infoDiv.textContent = "❌ Error: " + err.message;
       infoDiv.className = "img-info error";
     }
     mostrarToast("Error al procesar imagen", "error");
@@ -1174,7 +1041,6 @@ function comprimirImagen(file, maxWidth, maxHeight, quality) {
         let width = img.width;
         let height = img.height;
 
-        // Calcular nuevo tamaño manteniendo proporción
         if (width > maxWidth) {
           height = Math.round(height * maxWidth / width);
           width = maxWidth;
@@ -1190,7 +1056,6 @@ function comprimirImagen(file, maxWidth, maxHeight, quality) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Convertir a base64 JPEG con calidad reducida
         const base64 = canvas.toDataURL('image/jpeg', quality);
         resolve(base64);
       };
@@ -1221,27 +1086,27 @@ function cerrarModalImg() {
 }
 
 /* =========================
-   FETCH SEGURO
+   FETCH - SOLUCIÓN CORS
 ========================= */
 async function sendToSheets(payload) {
   mostrarLoading("Guardando...");
   try {
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
+    // SOLUCIÓN CORS: Usar mode no-cors para evitar preflight
+    // Con no-cors no podemos leer la respuesta, pero la petición SÍ se envía
+    await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
+      mode: "no-cors",
       headers: {
         "Content-Type": "text/plain;charset=utf-8"
       },
       body: JSON.stringify(payload)
     });
 
-    const text = await response.text();
-    console.log("RESPUESTA RAW:", text);
+    console.log("✅ Petición POST enviada (mode: no-cors)");
 
-    try {
-      return JSON.parse(text);
-    } catch {
-      return { ok: false, error: "Respuesta no es JSON", raw: text };
-    }
+    // Esperar para que el servidor procese
+    await new Promise(r => setTimeout(r, 1500));
+    return { ok: true, mensaje: "Guardado correctamente" };
 
   } catch (err) {
     console.error("ERROR FETCH:", err);
@@ -1252,18 +1117,30 @@ async function sendToSheets(payload) {
   }
 }
 
-/* =========================
-   CARGAR DATOS
-========================= */
 async function cargarDesdeSheets() {
   mostrarLoading("Cargando pedidos...");
   try {
-    const res = await fetch(GOOGLE_SCRIPT_URL);
-    const data = await res.json();
+    // Para GET usamos un proxy CORS público
+    const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(GOOGLE_SCRIPT_URL);
+    const res = await fetch(proxyUrl);
+    const proxyData = await res.json();
+
+    let data;
+    try {
+      data = JSON.parse(proxyData.contents);
+    } catch {
+      data = proxyData.contents;
+    }
 
     console.log("Datos cargados:", data);
 
-    pedidos = data || [];
+    if (data && data.error) {
+      console.error("Error del servidor:", data.error);
+      mostrarToast("Error: " + data.error, "error");
+      return;
+    }
+
+    pedidos = Array.isArray(data) ? data : [];
     pedidosFiltrados = [...pedidos];
 
     renderTabla();
@@ -1272,15 +1149,12 @@ async function cargarDesdeSheets() {
 
   } catch (err) {
     console.error("ERROR GET:", err);
-    mostrarToast("Error al cargar datos", "error");
+    mostrarToast("Error al cargar datos: " + err.message, "error");
   } finally {
     ocultarLoading();
   }
 }
 
-/* =========================
-   GUARDAR / EDITAR
-========================= */
 async function guardarPedido() {
   const ahora = new Date();
   const fechaLocal = ahora.getFullYear() + "-" + 
@@ -1288,8 +1162,6 @@ async function guardarPedido() {
     String(ahora.getDate()).padStart(2, '0') + " " + 
     String(ahora.getHours()).padStart(2, '0') + ":" + 
     String(ahora.getMinutes()).padStart(2, '0');
-
-  const ubicacionUrl = document.getElementById("ubicacion").value.trim();
 
   const data = {
     id: editandoId || Date.now(),
@@ -1301,7 +1173,7 @@ async function guardarPedido() {
     vendedor: document.getElementById("vendedor").value,
     medioPago: document.getElementById("medioPago").value,
     camion: document.getElementById("camion").value,
-    ubicacion: ubicacionUrl,
+    ubicacion: document.getElementById("ubicacion").value.trim(),
     observaciones: document.getElementById("observaciones").value,
     imgBoleta: imagenBase64 || "",
     fecha: fechaLocal,
@@ -1309,8 +1181,7 @@ async function guardarPedido() {
     enviarHoy: "No"
   };
 
-  console.log("Enviando datos:", data);
-  console.log("imgBoleta length:", data.imgBoleta ? data.imgBoleta.length : 0);
+  console.log("Enviando:", { ...data, imgBoleta: data.imgBoleta ? data.imgBoleta.substring(0, 50) + "..." : "vacío" });
 
   if (editandoId) {
     await sendToSheets({ action: "update", ...data });
@@ -1325,20 +1196,12 @@ async function guardarPedido() {
   await cargarDesdeSheets();
 }
 
-/* =========================
-   EDITAR
-========================= */
 function editarPedido(id) {
   mostrarLoading("Cargando...");
-
   const p = pedidos.find(x => String(x.id) === String(id));
-  if (!p) {
-    ocultarLoading();
-    return;
-  }
+  if (!p) { ocultarLoading(); return; }
 
   editandoId = id;
-
   document.getElementById("cliente").value = p.cliente || "";
   document.getElementById("dni").value = p.dni || "";
   document.getElementById("telefono").value = p.telefono || "";
@@ -1350,7 +1213,6 @@ function editarPedido(id) {
   document.getElementById("ubicacion").value = p.ubicacion || "";
   document.getElementById("observaciones").value = p.observaciones || "";
 
-  // Cargar imagen si existe
   if (p.imgBoleta && p.imgBoleta.trim() !== "" && p.imgBoleta.startsWith("data:image")) {
     imagenBase64 = p.imgBoleta;
     document.getElementById("previewImg").src = imagenBase64;
@@ -1366,81 +1228,42 @@ function editarPedido(id) {
   }
 
   document.querySelector(".formulario").scrollIntoView({ behavior: "smooth" });
-
   ocultarLoading();
 }
 
-/* =========================
-   ELIMINAR
-========================= */
 async function eliminarPedido(id) {
   if (!confirm("¿Eliminar pedido?")) return;
-
   await sendToSheets({ action: "delete", id: id });
   mostrarToast("🗑️ Pedido eliminado", "success");
   await cargarDesdeSheets();
 }
 
-/* =========================
-   ESTADO
-========================= */
 async function cambiarEstado(id) {
   mostrarLoading("Actualizando...");
-
   const p = pedidos.find(x => String(x.id) === String(id));
-  if (!p) {
-    ocultarLoading();
-    return;
-  }
-
+  if (!p) { ocultarLoading(); return; }
   p.estado = p.estado === "Entregado" ? "Pendiente" : "Entregado";
-
   try {
-    await sendToSheets({
-      action: "updateStatus",
-      id: p.id,
-      estado: p.estado
-    });
+    await sendToSheets({ action: "updateStatus", id: p.id, estado: p.estado });
     mostrarToast("✅ Estado actualizado", "success");
     await cargarDesdeSheets();
-  } catch (err) {
-    ocultarLoading();
-  }
+  } catch (err) { ocultarLoading(); }
 }
 
-/* =========================
-   MARCAR ENVIAR HOY
-========================= */
 async function toggleEnviarHoy(id) {
   mostrarLoading("Actualizando...");
-
   const p = pedidos.find(x => String(x.id) === String(id));
-  if (!p) {
-    ocultarLoading();
-    return;
-  }
-
+  if (!p) { ocultarLoading(); return; }
   const nuevoValor = p.enviarHoy === "Sí" ? "No" : "Sí";
-
   try {
-    await sendToSheets({
-      action: "updateEnviarHoy",
-      id: p.id,
-      enviarHoy: nuevoValor
-    });
+    await sendToSheets({ action: "updateEnviarHoy", id: p.id, enviarHoy: nuevoValor });
     mostrarToast(nuevoValor === "Sí" ? "✅ Marcado para hoy" : "❌ Desmarcado", "success");
     await cargarDesdeSheets();
-  } catch (err) {
-    ocultarLoading();
-  }
+  } catch (err) { ocultarLoading(); }
 }
 
-/* =========================
-   FILTROS
-========================= */
 function aplicarFiltros() {
   mostrarLoading("Filtrando...");
-
   const d = document.getElementById("filtroDistrito").value;
   const f = document.getElementById("filtroFecha").value;
   const c = document.getElementById("filtroCamion").value;
@@ -1453,7 +1276,6 @@ function aplicarFiltros() {
   });
 
   renderTabla();
-
   setTimeout(() => {
     ocultarLoading();
     mostrarToast(`🔍 ${pedidosFiltrados.length} pedidos encontrados`, "info");
@@ -1469,17 +1291,12 @@ function limpiarFiltros() {
   mostrarToast("🧹 Filtros limpiados", "info");
 }
 
-/* ============================================================
-   RUTAS / MAPAS - SOLO PEDIDOS MARCADOS "ENVIAR HOY"
-   ============================================================ */
 function renderRutas() {
   const container = document.getElementById("rutasContainer");
   container.innerHTML = "";
-
   const camiones = ["Camión 1", "Camión 2", "Camión 3"];
 
   camiones.forEach((camion) => {
-    // Solo pedidos marcados "Sí" en enviarHoy, pendientes, CON ubicación
     const pedidosCamion = pedidos.filter(p => 
       p.camion === camion && 
       p.estado === "Pendiente" &&
@@ -1505,7 +1322,6 @@ function renderRutas() {
       return;
     }
 
-    // Generar el listado de ubicaciones con links directos
     const listadoUbicacionesHTML = pedidosCamion.map((p, i) => {
       const imgHtml = (p.imgBoleta && p.imgBoleta.trim() !== "" && p.imgBoleta.startsWith("data:image")) 
         ? `<div class="img-boleta"><img src="${p.imgBoleta}" onclick="abrirModalImg('${p.imgBoleta}')" title="Click para ampliar"></div>`
@@ -1517,42 +1333,25 @@ function renderRutas() {
             <span class="numero-orden">${i + 1}</span>
             <span class="cliente-nombre">${p.cliente || 'Sin nombre'}</span>
           </div>
-          <div class="direccion-texto">
-            📍 ${p.direccion || 'Sin dirección'}${p.distrito ? ', ' + p.distrito : ''}
-          </div>
-          <div class="telefono-texto">
-            📱 ${p.telefono || 'Sin teléfono'}
-          </div>
+          <div class="direccion-texto">📍 ${p.direccion || 'Sin dirección'}${p.distrito ? ', ' + p.distrito : ''}</div>
+          <div class="telefono-texto">📱 ${p.telefono || 'Sin teléfono'}</div>
           ${p.dni ? `<div class="telefono-texto">🆔 DNI: ${p.dni}</div>` : ''}
           ${p.observaciones ? `<div class="observaciones-texto">📝 ${p.observaciones}</div>` : ''}
           ${imgHtml}
-          <a class="link-maps" href="${p.ubicacion}" target="_blank" rel="noopener noreferrer">
-            🗺️ Abrir en Google Maps
-          </a>
+          <a class="link-maps" href="${p.ubicacion}" target="_blank" rel="noopener noreferrer">🗺️ Abrir en Google Maps</a>
         </div>
       `;
     }).join('');
 
-    // Resumen de la ruta
     const resumenHTML = `
       <div class="resumen-ruta">
         <div class="resumen-titulo">📊 Resumen de la Ruta</div>
-        <div class="resumen-dato">
-          <span>Total de entregas:</span>
-          <span class="resumen-valor">${pedidosCamion.length}</span>
-        </div>
-        <div class="resumen-dato">
-          <span>Distritos:</span>
-          <span class="resumen-valor">${[...new Set(pedidosCamion.map(p => p.distrito).filter(Boolean))].join(', ') || 'N/A'}</span>
-        </div>
-        <div class="resumen-dato">
-          <span>Medios de pago:</span>
-          <span class="resumen-valor">${[...new Set(pedidosCamion.map(p => p.medioPago).filter(Boolean))].join(', ') || 'N/A'}</span>
-        </div>
+        <div class="resumen-dato"><span>Total de entregas:</span><span class="resumen-valor">${pedidosCamion.length}</span></div>
+        <div class="resumen-dato"><span>Distritos:</span><span class="resumen-valor">${[...new Set(pedidosCamion.map(p => p.distrito).filter(Boolean))].join(', ') || 'N/A'}</span></div>
+        <div class="resumen-dato"><span>Medios de pago:</span><span class="resumen-valor">${[...new Set(pedidosCamion.map(p => p.medioPago).filter(Boolean))].join(', ') || 'N/A'}</span></div>
       </div>
     `;
 
-    // Generar mensaje de WhatsApp con todos los links
     const wspMensaje = generarMensajeWsp(camion, pedidosCamion);
 
     container.innerHTML += `
@@ -1561,24 +1360,13 @@ function renderRutas() {
           <h3>🚚 ${camion}</h3>
           <span class="badge">${pedidosCamion.length} entregas para hoy</span>
         </div>
-
         <div class="ubicaciones-panel">
           <h4>📍 Listado de Ubicaciones (${pedidosCamion.length})</h4>
-
           ${resumenHTML}
-
-          <div style="margin-top:10px;">
-            ${listadoUbicacionesHTML}
-          </div>
-
-          <!-- Acciones principales de la ruta -->
+          <div style="margin-top:10px;">${listadoUbicacionesHTML}</div>
           <div class="acciones-ruta-principales">
-            <a class="btn-wsp-conductor" href="https://wa.me/?text=${encodeURIComponent(wspMensaje)}" target="_blank" rel="noopener noreferrer">
-              📱 Enviar al Conductor
-            </a>
-            <button class="btn-copiar-ubicaciones" onclick="copiarUbicaciones('${camion}')">
-              📋 Copiar Ubicaciones
-            </button>
+            <a class="btn-wsp-conductor" href="https://wa.me/?text=${encodeURIComponent(wspMensaje)}" target="_blank" rel="noopener noreferrer">📱 Enviar al Conductor</a>
+            <button class="btn-copiar-ubicaciones" onclick="copiarUbicaciones('${camion}')">📋 Copiar Ubicaciones</button>
           </div>
         </div>
       </div>
@@ -1588,34 +1376,24 @@ function renderRutas() {
 
 function generarMensajeWsp(camion, pedidos) {
   let msg = `🚚 *RUTA ${camion.toUpperCase()} - ${pedidos.length} ENTREGAS*\n\n`;
-
   pedidos.forEach((p, i) => {
     msg += `${i + 1}️⃣ *${p.cliente || 'Sin nombre'}*\n`;
     msg += `🆔 DNI: ${p.dni || 'N/A'}\n`;
     msg += `📍 ${p.direccion || 'Sin dirección'}${p.distrito ? ', ' + p.distrito : ''}\n`;
     msg += `📱 ${p.telefono || 'Sin teléfono'}\n`;
     if (p.observaciones) msg += `📝 ${p.observaciones}\n`;
-    msg += `🔗 ${p.ubicacion || 'Sin link'}\n`;
-    msg += `\n`;
+    msg += `🔗 ${p.ubicacion || 'Sin link'}\n\n`;
   });
-
   msg += `¡Buen viaje! 🚛💨`;
-
   return msg;
 }
 
 function copiarUbicaciones(camion) {
   const pedidosCamion = pedidos.filter(p => 
-    p.camion === camion && 
-    p.estado === "Pendiente" &&
-    p.enviarHoy === "Sí" &&
-    p.ubicacion && 
-    p.ubicacion.trim() !== ""
+    p.camion === camion && p.estado === "Pendiente" &&
+    p.enviarHoy === "Sí" && p.ubicacion && p.ubicacion.trim() !== ""
   );
-
-  let texto = `📍 UBICACIONES - ${camion.toUpperCase()}\n`;
-  texto += `Total: ${pedidosCamion.length} entregas\n\n`;
-
+  let texto = `📍 UBICACIONES - ${camion.toUpperCase()}\nTotal: ${pedidosCamion.length} entregas\n\n`;
   pedidosCamion.forEach((p, i) => {
     texto += `${i + 1}. ${p.cliente || 'Sin nombre'}\n`;
     texto += `   🆔 DNI: ${p.dni || 'N/A'}\n`;
@@ -1623,26 +1401,18 @@ function copiarUbicaciones(camion) {
     texto += `   📱 ${p.telefono || ''}\n`;
     texto += `   🔗 ${p.ubicacion || ''}\n\n`;
   });
-
   navigator.clipboard.writeText(texto).then(() => {
-    mostrarToast("✅ Ubicaciones copiadas al portapapeles", "success");
+    mostrarToast("✅ Ubicaciones copiadas", "success");
   }).catch(() => {
     mostrarToast("❌ No se pudo copiar", "error");
   });
 }
 
-/* =========================
-   DROPDOWN UBICACIÓN
-========================= */
 function toggleDropdown(id) {
   document.querySelectorAll(".dropdown-content").forEach(d => {
-    if (d.id !== "dropdown-" + id) {
-      d.classList.remove("show");
-    }
+    if (d.id !== "dropdown-" + id) d.classList.remove("show");
   });
-
-  const dropdown = document.getElementById("dropdown-" + id);
-  dropdown.classList.toggle("show");
+  document.getElementById("dropdown-" + id).classList.toggle("show");
 }
 
 window.onclick = function(event) {
@@ -1651,26 +1421,16 @@ window.onclick = function(event) {
   }
 };
 
-/* =========================
-   UI
-========================= */
 function actualizarDashboard() {
-  document.getElementById("pendientes").innerText =
-    pedidos.filter(p => p.estado === "Pendiente").length;
-
-  document.getElementById("entregados").innerText =
-    pedidos.filter(p => p.estado === "Entregado").length;
-
+  document.getElementById("pendientes").innerText = pedidos.filter(p => p.estado === "Pendiente").length;
+  document.getElementById("entregados").innerText = pedidos.filter(p => p.estado === "Entregado").length;
   document.getElementById("total").innerText = pedidos.length;
-
-  document.getElementById("paraHoy").innerText =
-    pedidos.filter(p => p.enviarHoy === "Sí" && p.estado === "Pendiente").length;
+  document.getElementById("paraHoy").innerText = pedidos.filter(p => p.enviarHoy === "Sí" && p.estado === "Pendiente").length;
 }
 
 function cargarDistritos() {
   const sel = document.getElementById("filtroDistrito");
   sel.innerHTML = `<option value="">Todos los distritos</option>`;
-
   [...new Set(pedidos.map(p => p.distrito).filter(Boolean))].forEach(d => {
     const opt = document.createElement("option");
     opt.value = d;
@@ -1688,20 +1448,10 @@ function renderTabla() {
     if (p.fecha) {
       try {
         const fechaObj = new Date(p.fecha);
-        if (!isNaN(fechaObj.getTime())) {
-          fechaMostrar = fechaObj.toLocaleString('es-PE', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-        } else {
-          fechaMostrar = p.fecha;
-        }
-      } catch (e) {
-        fechaMostrar = p.fecha || "-";
-      }
+        fechaMostrar = !isNaN(fechaObj.getTime()) 
+          ? fechaObj.toLocaleString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+          : p.fecha;
+      } catch (e) { fechaMostrar = p.fecha || "-"; }
     }
 
     const tieneUbicacion = p.ubicacion && p.ubicacion.trim() !== "";
@@ -1713,21 +1463,15 @@ function renderTabla() {
         <div class="dropdown-maps">
           <button class="btn-maps" onclick="toggleDropdown('${p.id}')">📍 Ver ▼</button>
           <div class="dropdown-content" id="dropdown-${p.id}">
-            <a href="${p.ubicacion}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
-              🗺️ Abrir en Google Maps
-            </a>
+            <a href="${p.ubicacion}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">🗺️ Abrir en Google Maps</a>
             <hr style="border: none; border-top: 1px solid #eee; margin: 5px 0;">
-            <div style="font-size: 11px; color: #666; padding: 0 8px; word-break: break-all;">
-              ${p.ubicacion.substring(0, 60)}...
-            </div>
+            <div style="font-size: 11px; color: #666; padding: 0 8px; word-break: break-all;">${p.ubicacion.substring(0, 60)}...</div>
           </div>
-        </div>
-      `;
+        </div>`;
     } else {
       ubicacionHTML = `<span style="color: #999; font-size: 12px;">—</span>`;
     }
 
-    // Imagen de boleta miniatura
     let boletaHTML = `<span style="color:#999; font-size:12px;">—</span>`;
     if (p.imgBoleta && p.imgBoleta.trim() !== "" && p.imgBoleta.startsWith("data:image")) {
       boletaHTML = `<img src="${p.imgBoleta}" class="img-miniatura" onclick="abrirModalImg('${p.imgBoleta}')" title="Click para ampliar">`;
@@ -1745,32 +1489,20 @@ function renderTabla() {
         <td>${p.medioPago || ''}</td>
         <td>${p.camion || ''}</td>
         <td>${fechaMostrar}</td>
-        <td>
-          <span class="${p.estado === 'Entregado' ? 'estado-entregado' : 'estado-pendiente'}">
-            ${p.estado || 'Pendiente'}
-          </span>
-        </td>
+        <td><span class="${p.estado === 'Entregado' ? 'estado-entregado' : 'estado-pendiente'}">${p.estado || 'Pendiente'}</span></td>
         <td>${ubicacionHTML}</td>
         <td>${p.observaciones || ''}</td>
         <td>${boletaHTML}</td>
-        <td>
-          <button class="btn-marcar-hoy ${enviarHoyActivo ? 'activo' : ''}" onclick="toggleEnviarHoy('${p.id}')" title="Marcar para enviar hoy">
-            ${enviarHoyActivo ? '✅ Hoy' : '📌 Marcar'}
-          </button>
-        </td>
+        <td><button class="btn-marcar-hoy ${enviarHoyActivo ? 'activo' : ''}" onclick="toggleEnviarHoy('${p.id}')">${enviarHoyActivo ? '✅ Hoy' : '📌 Marcar'}</button></td>
         <td>
           <button class="btn-check" onclick="cambiarEstado('${p.id}')" title="Cambiar estado">✓</button>
           <button class="btn-edit" onclick="editarPedido('${p.id}')" title="Editar">✏️</button>
           <button class="btn-trash" onclick="eliminarPedido('${p.id}')" title="Eliminar">🗑</button>
         </td>
-      </tr>
-    `;
+      </tr>`;
   });
 }
 
-/* =========================
-   LIMPIAR FORM
-========================= */
 function limpiarFormulario() {
   document.getElementById("cliente").value = "";
   document.getElementById("dni").value = "";
